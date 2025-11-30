@@ -1,54 +1,66 @@
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import TrustIndicators from "@/components/TrustIndicators";
-import { Target, Eye, Award, Users, CheckCircle } from "lucide-react";
+import { Link } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import TrustIndicators from '@/components/TrustIndicators';
+import { Target, Eye, Award, Users, CheckCircle } from 'lucide-react';
+import { useSiteContent } from '@/hooks/useContent';
 
-import heroImg from "@assets/generated_images/business_partnership_handshake.png";
-import warehouseImg from "@assets/generated_images/export_warehouse_shipping_containers.png";
+import heroImg from '@assets/generated_images/business_partnership_handshake.png';
+import warehouseImg from '@assets/generated_images/export_warehouse_shipping_containers.png';
 
-// todo: remove mock functionality - replace with CMS content
-const aboutContent = {
-  hero: {
-    title: "About The Atlas Exports",
-    subtitle: "Your Trusted Partner in Global Trade Since 2010",
+const whyChooseUsItems = [
+  {
+    icon: Award,
+    title: 'Quality Assurance',
+    description:
+      'Every product undergoes rigorous quality checks before export. We hold ISO certifications and follow international standards.',
   },
-  about: `The Atlas Exports is a premier B2B export company based in Punjab, India, specializing in agricultural equipment, agro commodities, furniture, marble & granite, and PVC/WPC products. Founded in 2010, we have grown to become one of the region's most trusted exporters, serving clients across 25+ countries.
+  {
+    icon: Users,
+    title: 'Dedicated Support',
+    description:
+      'Each client gets a dedicated account manager who understands your business needs and ensures smooth transactions.',
+  },
+  {
+    icon: CheckCircle,
+    title: 'End-to-End Service',
+    description:
+      'From sourcing to shipping, documentation to delivery - we handle the complete export process for you.',
+  },
+  {
+    icon: Target,
+    title: 'Competitive Pricing',
+    description:
+      'Direct manufacturer relationships and efficient operations allow us to offer the best prices without compromising quality.',
+  },
+];
 
-Our headquarters in Ludhiana, the industrial hub of Punjab, gives us direct access to quality manufacturing facilities and agricultural produce. We work closely with farmers, manufacturers, and artisans to source the finest products that meet international quality standards.`,
-  mission: "To bridge global markets with Punjab's finest products, delivering exceptional quality and value while fostering sustainable business relationships that benefit all stakeholders.",
-  vision: "To become the most trusted name in agricultural and industrial exports from India, setting benchmarks for quality, reliability, and customer satisfaction in the international trade community.",
-  whyChooseUs: [
-    {
-      icon: Award,
-      title: "Quality Assurance",
-      description: "Every product undergoes rigorous quality checks before export. We hold ISO certifications and follow international standards.",
-    },
-    {
-      icon: Users,
-      title: "Dedicated Support",
-      description: "Each client gets a dedicated account manager who understands your business needs and ensures smooth transactions.",
-    },
-    {
-      icon: CheckCircle,
-      title: "End-to-End Service",
-      description: "From sourcing to shipping, documentation to delivery - we handle the complete export process for you.",
-    },
-    {
-      icon: Target,
-      title: "Competitive Pricing",
-      description: "Direct manufacturer relationships and efficient operations allow us to offer the best prices without compromising quality.",
-    },
-  ],
-  founders: [
-    { name: "Rajinder Singh", role: "Founder & CEO", initials: "RS" },
-    { name: "Harpreet Kaur", role: "Co-Founder & COO", initials: "HK" },
-    { name: "Amarjit Singh", role: "Director, Operations", initials: "AS" },
-  ],
-};
+const founders = [
+  { name: 'Rajinder Singh', role: 'Founder & CEO', initials: 'RS' },
+  { name: 'Harpreet Kaur', role: 'Co-Founder & COO', initials: 'HK' },
+  { name: 'Amarjit Singh', role: 'Director, Operations', initials: 'AS' },
+];
 
 export default function About() {
+  const { data: content, isLoading } = useSiteContent();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Skeleton className="h-[40vh] w-full" />
+        <div className="max-w-7xl mx-auto px-4 py-16 space-y-8">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  const about = content?.about;
+  const companyInfo = content?.companyInfo;
+
   return (
     <div className="min-h-screen bg-background">
       <section className="relative h-[40vh] min-h-[300px] overflow-hidden">
@@ -61,10 +73,11 @@ export default function About() {
         <div className="absolute inset-0 flex items-center justify-center text-center text-white px-4">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {aboutContent.hero.title}
+              {about?.heroTitle || 'About The Atlas Exports'}
             </h1>
             <p className="text-lg md:text-xl text-white/90">
-              {aboutContent.hero.subtitle}
+              {about?.heroSubtitle ||
+                `${companyInfo?.tagline || 'Your Trusted Partner in Global Trade'} Since ${about?.foundedYear || '2010'}`}
             </p>
           </div>
         </div>
@@ -76,8 +89,10 @@ export default function About() {
             <div>
               <h2 className="text-3xl font-bold mb-6">Who We Are</h2>
               <div className="prose prose-lg text-muted-foreground">
-                {aboutContent.about.split("\n\n").map((para, i) => (
-                  <p key={i} className="mb-4">{para}</p>
+                {(about?.description || '').split('\n\n').map((para, i) => (
+                  <p key={i} className="mb-4">
+                    {para}
+                  </p>
                 ))}
               </div>
             </div>
@@ -103,7 +118,7 @@ export default function About() {
                   </div>
                   <h3 className="text-2xl font-bold">Our Mission</h3>
                 </div>
-                <p className="text-muted-foreground">{aboutContent.mission}</p>
+                <p className="text-muted-foreground">{about?.mission}</p>
               </CardContent>
             </Card>
             <Card>
@@ -114,7 +129,7 @@ export default function About() {
                   </div>
                   <h3 className="text-2xl font-bold">Our Vision</h3>
                 </div>
-                <p className="text-muted-foreground">{aboutContent.vision}</p>
+                <p className="text-muted-foreground">{about?.vision}</p>
               </CardContent>
             </Card>
           </div>
@@ -128,18 +143,21 @@ export default function About() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Why Choose Us</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              We go above and beyond to ensure your satisfaction with every order
+              We go above and beyond to ensure your satisfaction with every
+              order
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {aboutContent.whyChooseUs.map((item, index) => (
+            {whyChooseUsItems.map((item, index) => (
               <Card key={index} className="text-center">
                 <CardContent className="p-6">
                   <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <item.icon className="h-7 w-7 text-primary" />
                   </div>
                   <h3 className="font-semibold mb-2">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -156,7 +174,7 @@ export default function About() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
-            {aboutContent.founders.map((founder, index) => (
+            {founders.map((founder, index) => (
               <div key={index} className="text-center">
                 <Avatar className="h-24 w-24 mx-auto mb-4">
                   <AvatarFallback className="text-2xl bg-primary/10 text-primary">
@@ -175,8 +193,8 @@ export default function About() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Partner with Us?</h2>
           <p className="text-muted-foreground mb-8">
-            Join hundreds of satisfied clients worldwide who trust The Atlas Exports 
-            for their sourcing needs.
+            Join hundreds of satisfied clients worldwide who trust{' '}
+            {companyInfo?.name || 'The Atlas Exports'} for their sourcing needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
@@ -185,7 +203,11 @@ export default function About() {
               </Button>
             </Link>
             <Link href="/products">
-              <Button size="lg" variant="outline" data-testid="button-about-products">
+              <Button
+                size="lg"
+                variant="outline"
+                data-testid="button-about-products"
+              >
                 Browse Products
               </Button>
             </Link>

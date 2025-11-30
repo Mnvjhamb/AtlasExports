@@ -20,6 +20,22 @@ export async function uploadFile(file: File, path: string): Promise<string> {
 }
 
 /**
+ * Upload an image to a specific folder
+ * @param file - The image file
+ * @param folder - The folder name (e.g., 'hero', 'products', 'categories')
+ * @returns The download URL
+ */
+export async function uploadImage(
+  file: File,
+  folder: string = 'images'
+): Promise<string> {
+  const timestamp = Date.now();
+  const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const path = `${folder}/${timestamp}_${safeName}`;
+  return uploadFile(file, path);
+}
+
+/**
  * Upload a product image
  * @param file - The image file
  * @param productId - Optional product ID for organizing files
