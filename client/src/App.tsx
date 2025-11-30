@@ -27,6 +27,7 @@ import AdminCategories from "@/pages/admin/AdminCategories";
 import AdminReviews from "@/pages/admin/AdminReviews";
 import AdminContacts from "@/pages/admin/AdminContacts";
 import AdminContent from "@/pages/admin/AdminContent";
+import AdminClients from "@/pages/admin/AdminClients";
 
 function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -105,6 +106,7 @@ function AdminRouter() {
         <Route path="/admin/categories" component={AdminCategories} />
         <Route path="/admin/reviews" component={AdminReviews} />
         <Route path="/admin/contacts" component={AdminContacts} />
+        <Route path="/admin/clients" component={AdminClients} />
         <Route path="/admin/content" component={AdminContent} />
         <Route>
           <AdminDashboard />

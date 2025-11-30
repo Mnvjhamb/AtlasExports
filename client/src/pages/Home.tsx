@@ -9,13 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight } from 'lucide-react';
 import { useCategories, useFeaturedProducts } from '@/hooks/useProducts';
+import { useClients } from '@/hooks/useClients';
 
 // Fallback images for when products don't have images
 import equipmentImg from '@assets/generated_images/hydraulic_disc_harrow_product.png';
 import marbleImg from '@assets/generated_images/marble_granite_stone_slabs.png';
 
-// Mock clients data (can be moved to Firestore later)
-const clients = [
+// Default clients if database is empty
+const defaultClients = [
   { name: 'AgriTech Solutions', country: 'United Arab Emirates' },
   { name: 'Global Harvest Co.', country: 'United Kingdom' },
   { name: 'FarmPro Industries', country: 'Australia' },
@@ -60,6 +61,11 @@ export default function Home() {
     isLoading: productsLoading,
     error: productsError,
   } = useFeaturedProducts();
+
+  const { data: dbClients, isLoading: clientsLoading } = useClients(true);
+
+  // Use database clients if available, otherwise use defaults
+  const clients = dbClients && dbClients.length > 0 ? dbClients : defaultClients;
 
   const handleRequestQuote = (productId: string) => {
     console.log('Quote requested for product:', productId);
@@ -213,9 +219,21 @@ export default function Home() {
             </p>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {clients.map((client, index) => (
-              <ClientCard key={index} {...client} index={index} />
-            ))}
+            {clientsLoading ? (
+              [...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-20 w-full rounded-lg" />
+              ))
+            ) : (
+              clients.map((client, index) => (
+                <ClientCard
+                  key={'id' in client ? client.id : index}
+                  name={client.name}
+                  country={client.country}
+                  logoUrl={'logoUrl' in client ? client.logoUrl : undefined}
+                  index={index}
+                />
+              ))
+            )}
           </div>
         </div>
       </section>

@@ -24,6 +24,7 @@ export const COLLECTIONS = {
   REVIEWS: 'reviews',
   CONTACTS: 'contacts',
   CONTENT: 'content',
+  CLIENTS: 'clients',
 } as const;
 
 // Types
@@ -90,6 +91,17 @@ export interface AdminUser {
   role: 'admin' | 'super_admin';
   createdAt: Timestamp;
   lastLogin?: Timestamp;
+}
+
+export interface Client {
+  id?: string;
+  name: string;
+  country: string;
+  logoUrl?: string;
+  website?: string;
+  isActive: boolean;
+  order: number;
+  createdAt: Timestamp;
 }
 
 export interface SiteContent {

@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   X,
+  Users,
 } from "lucide-react";
 
 const navItems = [
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/admin/categories", label: "Categories", icon: FolderOpen },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/contacts", label: "Contacts", icon: MessageSquare },
+  { href: "/admin/clients", label: "Clients", icon: Users },
   { href: "/admin/content", label: "Content", icon: FileText },
 ];
 
