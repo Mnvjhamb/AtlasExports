@@ -1,8 +1,10 @@
 import { Link } from "wouter";
+import { motion } from "framer-motion";
 import HeroCarousel from "@/components/HeroCarousel";
 import CategoryCard from "@/components/CategoryCard";
 import ProductCard from "@/components/ProductCard";
 import TrustIndicators from "@/components/TrustIndicators";
+import ClientCard from "@/components/ClientCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
@@ -68,6 +70,18 @@ const featuredProducts = [
   },
 ];
 
+// todo: remove mock functionality - replace with API data
+const clients = [
+  { name: "AgriTech Solutions", country: "United Arab Emirates" },
+  { name: "Global Harvest Co.", country: "United Kingdom" },
+  { name: "FarmPro Industries", country: "Australia" },
+  { name: "Golden Grain Trading", country: "Saudi Arabia" },
+  { name: "Pacific Agriculture", country: "Singapore" },
+  { name: "Euro Agri Imports", country: "Germany" },
+  { name: "AfriTrade LLC", country: "South Africa" },
+  { name: "Canadian Farm Supplies", country: "Canada" },
+];
+
 export default function Home() {
   const handleRequestQuote = (productId: string) => {
     console.log("Quote requested for product:", productId);
@@ -79,16 +93,22 @@ export default function Home() {
 
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
             <h2 className="text-3xl font-bold mb-4">Our Product Categories</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Explore our diverse range of quality products, from agricultural machinery to 
               premium commodities, furniture, and building materials.
             </p>
-          </div>
+          </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category) => (
-              <CategoryCard key={category.id} {...category} />
+            {categories.map((category, index) => (
+              <CategoryCard key={category.id} {...category} index={index} />
             ))}
           </div>
         </div>
@@ -98,7 +118,13 @@ export default function Home() {
 
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-12">
+          <motion.div 
+            className="flex items-center justify-between mb-12 flex-wrap gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
             <div>
               <h2 className="text-3xl font-bold mb-2">Featured Products</h2>
               <p className="text-muted-foreground">
@@ -111,31 +137,65 @@ export default function Home() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-          </div>
+          </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProducts.map((product) => (
+            {featuredProducts.map((product, index) => (
               <ProductCard
                 key={product.id}
                 {...product}
+                index={index}
                 onRequestQuote={handleRequestQuote}
               />
             ))}
           </div>
-          <div className="mt-8 text-center sm:hidden">
+          <motion.div 
+            className="mt-8 text-center sm:hidden"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
             <Link href="/products">
               <Button data-testid="button-view-all-products-mobile">
                 View All Products
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       <section className="py-16 bg-card border-t border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-3xl font-bold mb-4">Our Trusted Clients</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              We're proud to partner with leading businesses across the globe.
+              Here are some of the companies that trust The Atlas Exports.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {clients.map((client, index) => (
+              <ClientCard key={index} {...client} index={index} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               <h2 className="text-3xl font-bold mb-4">
                 Partner with Punjab's Trusted Export Company
               </h2>
@@ -151,10 +211,17 @@ export default function Home() {
                   "End-to-end logistics support",
                   "Dedicated account manager for each client",
                 ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-2">
+                  <motion.li 
+                    key={index} 
+                    className="flex items-center gap-2"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
+                  >
                     <div className="h-2 w-2 rounded-full bg-primary" />
                     <span className="text-muted-foreground">{item}</span>
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -163,24 +230,36 @@ export default function Home() {
                     Get in Touch
                   </Button>
                 </Link>
-                <Link href="/client-portal">
-                  <Button size="lg" variant="outline" data-testid="button-cta-portal">
-                    Visit Client Portal
+                <Link href="/reviews">
+                  <Button size="lg" variant="outline" data-testid="button-cta-reviews">
+                    See Reviews
                   </Button>
                 </Link>
               </div>
-            </div>
-            <div className="relative">
+            </motion.div>
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               <img
                 src={marbleImg}
                 alt="Quality products"
                 className="rounded-lg shadow-lg"
               />
-              <div className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-6 rounded-lg hidden lg:block">
+              <motion.div 
+                className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-6 rounded-lg hidden lg:block"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
                 <div className="text-4xl font-bold">14+</div>
                 <div className="text-sm opacity-90">Years of Excellence</div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </section>

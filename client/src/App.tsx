@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AnimatePresence, motion } from "framer-motion";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -13,6 +14,7 @@ import Home from "@/pages/Home";
 import Products from "@/pages/Products";
 import ProductDetail from "@/pages/ProductDetail";
 import About from "@/pages/About";
+import Reviews from "@/pages/Reviews";
 import ClientPortal from "@/pages/ClientPortal";
 import Contact from "@/pages/Contact";
 import NotFound from "@/pages/not-found";
@@ -36,18 +38,52 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function PageTransition({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3 }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 function PublicRouter() {
+  const [location] = useLocation();
+  
   return (
     <PublicLayout>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/products" component={Products} />
-        <Route path="/products/:id" component={ProductDetail} />
-        <Route path="/about" component={About} />
-        <Route path="/client-portal" component={ClientPortal} />
-        <Route path="/contact" component={Contact} />
-        <Route component={NotFound} />
-      </Switch>
+      <AnimatePresence mode="wait">
+        <Switch key={location}>
+          <Route path="/">
+            <PageTransition><Home /></PageTransition>
+          </Route>
+          <Route path="/products">
+            <PageTransition><Products /></PageTransition>
+          </Route>
+          <Route path="/products/:id">
+            <PageTransition><ProductDetail /></PageTransition>
+          </Route>
+          <Route path="/about">
+            <PageTransition><About /></PageTransition>
+          </Route>
+          <Route path="/reviews">
+            <PageTransition><Reviews /></PageTransition>
+          </Route>
+          <Route path="/client-portal">
+            <PageTransition><ClientPortal /></PageTransition>
+          </Route>
+          <Route path="/contact">
+            <PageTransition><Contact /></PageTransition>
+          </Route>
+          <Route>
+            <PageTransition><NotFound /></PageTransition>
+          </Route>
+        </Switch>
+      </AnimatePresence>
     </PublicLayout>
   );
 }
