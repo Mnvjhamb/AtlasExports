@@ -33,7 +33,6 @@ export interface Category {
   description: string;
   imageUrl: string;
   slug: string;
-  order: number;
   isActive: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -75,9 +74,12 @@ export interface ContactSubmission {
   phone?: string;
   company?: string;
   country?: string;
+  subject: string;
   message: string;
   productInterest?: string;
   isRead: boolean;
+  repliedAt?: Timestamp;
+  replyNote?: string;
   createdAt: Timestamp;
 }
 

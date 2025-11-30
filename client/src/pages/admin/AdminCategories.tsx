@@ -60,7 +60,6 @@ interface CategoryFormData {
   name: string;
   description: string;
   imageUrl: string;
-  order: number;
   isActive: boolean;
 }
 
@@ -68,7 +67,6 @@ const initialFormData: CategoryFormData = {
   name: '',
   description: '',
   imageUrl: '',
-  order: 0,
   isActive: true,
 };
 
@@ -132,7 +130,6 @@ export default function AdminCategories() {
       name: category.name || '',
       description: category.description || '',
       imageUrl: category.imageUrl || '',
-      order: category.order || 0,
       isActive: category.isActive ?? true,
     });
     setShowDialog(true);
@@ -140,10 +137,7 @@ export default function AdminCategories() {
 
   const handleAdd = () => {
     setEditingCategory(null);
-    setFormData({
-      ...initialFormData,
-      order: (categories?.length || 0) + 1,
-    });
+    setFormData(initialFormData);
     setShowDialog(true);
   };
 
@@ -199,7 +193,6 @@ export default function AdminCategories() {
       description: formData.description.trim(),
       imageUrl: formData.imageUrl,
       slug: generateSlug(formData.name),
-      order: formData.order,
       isActive: formData.isActive,
     };
 
@@ -262,7 +255,6 @@ export default function AdminCategories() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Category</TableHead>
-                  <TableHead>Order</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -293,7 +285,6 @@ export default function AdminCategories() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{category.order || 0}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Switch
@@ -375,21 +366,6 @@ export default function AdminCategories() {
                 }
                 placeholder="Category description"
                 rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Display Order</Label>
-              <Input
-                type="number"
-                min="0"
-                value={formData.order}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    order: parseInt(e.target.value) || 0,
-                  }))
-                }
               />
             </div>
 
