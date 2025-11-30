@@ -89,14 +89,16 @@ export default function AdminReviews() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold mb-2">Reviews</h1>
-          <p className="text-muted-foreground">
-            Manage customer reviews and testimonials
+          <div className="flex items-center gap-2">
+            <p className="text-muted-foreground">
+              Manage customer reviews and testimonials
+            </p>
             {pendingCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary">
                 {pendingCount} pending
               </Badge>
             )}
-          </p>
+          </div>
         </div>
       </div>
 
