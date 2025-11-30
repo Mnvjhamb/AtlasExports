@@ -1,62 +1,99 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Link } from 'wouter';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Package,
   MessageSquare,
   Star,
-  TrendingUp,
-  Eye,
-  MousePointer,
+  FolderOpen,
   Users,
   Clock,
-} from "lucide-react";
+  ArrowRight,
+  TrendingUp,
+  AlertCircle,
+} from 'lucide-react';
+import {
+  useDashboardStats,
+  useRecentContacts,
+  useRecentReviews,
+  formatRelativeTime,
+  getSubjectLabel,
+} from '@/hooks/useDashboard';
 
-// todo: remove mock functionality - replace with API data
-const stats = [
-  { title: "Total Products", value: "28", icon: Package, change: "+3 this month" },
-  { title: "Contact Submissions", value: "45", icon: MessageSquare, change: "12 unread" },
-  { title: "Reviews", value: "24", icon: Star, change: "5 pending" },
-  { title: "Total Events", value: "1,284", icon: TrendingUp, change: "+156 this week" },
-];
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  subtitle,
+  subtitleVariant = 'default',
+  isLoading,
+}: {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  subtitle?: string;
+  subtitleVariant?: 'default' | 'warning' | 'success';
+  isLoading?: boolean;
+}) {
+  const subtitleColor = {
+    default: 'text-muted-foreground',
+    warning: 'text-orange-500',
+    success: 'text-green-500',
+  }[subtitleVariant];
 
-// todo: remove mock functionality - replace with API data
-const recentEvents = [
-  { type: "page_view", page: "Products", details: "Hydraulic Disc Harrow viewed", time: "2 mins ago" },
-  { type: "form_submit", page: "Contact", details: "Quote request submitted", time: "15 mins ago" },
-  { type: "button_click", page: "Home", details: "View Products CTA clicked", time: "32 mins ago" },
-  { type: "social_click", page: "Client Portal", details: "WhatsApp link clicked", time: "1 hour ago" },
-  { type: "page_view", page: "About", details: "About page viewed", time: "1 hour ago" },
-  { type: "form_submit", page: "Client Portal", details: "Review submitted", time: "2 hours ago" },
-  { type: "page_view", page: "Products", details: "Basmati Rice viewed", time: "3 hours ago" },
-  { type: "button_click", page: "Products", details: "Request Quote clicked", time: "3 hours ago" },
-];
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Icon className="h-5 w-5 text-primary" />
+          </div>
+        </div>
+        {isLoading ? (
+          <>
+            <Skeleton className="h-8 w-16 mb-1" />
+            <Skeleton className="h-4 w-24" />
+          </>
+        ) : (
+          <>
+            <div className="text-2xl font-bold mb-1">{value}</div>
+            <div className="text-sm text-muted-foreground">{title}</div>
+            {subtitle && (
+              <div className={`text-xs mt-2 ${subtitleColor}`}>{subtitle}</div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
-// todo: remove mock functionality - replace with API data
-const recentSubmissions = [
-  { name: "John Smith", company: "AgriTech UK", subject: "Quote Request", status: "unread", time: "15 mins ago" },
-  { name: "Maria Garcia", company: "FarmPro Spain", subject: "Partnership", status: "unread", time: "2 hours ago" },
-  { name: "Li Wei", company: "China Imports", subject: "Product Inquiry", status: "read", time: "5 hours ago" },
-];
-
-const getEventIcon = (type: string) => {
-  switch (type) {
-    case "page_view": return Eye;
-    case "button_click": return MousePointer;
-    case "form_submit": return MessageSquare;
-    case "social_click": return Users;
-    default: return Eye;
-  }
-};
-
-const getEventBadgeVariant = (type: string): "default" | "secondary" | "outline" => {
-  switch (type) {
-    case "form_submit": return "default";
-    case "button_click": return "secondary";
-    default: return "outline";
-  }
-};
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={`h-3 w-3 ${
+            star <= rating
+              ? 'fill-yellow-400 text-yellow-400'
+              : 'text-muted-foreground'
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: recentContacts, isLoading: contactsLoading } =
+    useRecentContacts(5);
+  const { data: recentReviews, isLoading: reviewsLoading } =
+    useRecentReviews(5);
+
   return (
     <div className="space-y-8">
       <div>
@@ -66,97 +103,316 @@ export default function AdminDashboard() {
         </p>
       </div>
 
+      {/* Main Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
-          <Card key={index}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <stat.icon className="h-5 w-5 text-primary" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold mb-1">{stat.value}</div>
-              <div className="text-sm text-muted-foreground">{stat.title}</div>
-              <div className="text-xs text-primary mt-2">{stat.change}</div>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          title="Total Products"
+          value={stats?.products.total || 0}
+          icon={Package}
+          subtitle={
+            stats?.products.featured
+              ? `${stats.products.featured} featured`
+              : undefined
+          }
+          subtitleVariant="success"
+          isLoading={statsLoading}
+        />
+        <StatCard
+          title="Categories"
+          value={stats?.categories.total || 0}
+          icon={FolderOpen}
+          subtitle={
+            stats?.categories.active
+              ? `${stats.categories.active} active`
+              : undefined
+          }
+          isLoading={statsLoading}
+        />
+        <StatCard
+          title="Contact Submissions"
+          value={stats?.contacts.total || 0}
+          icon={MessageSquare}
+          subtitle={
+            stats?.contacts.unread
+              ? `${stats.contacts.unread} unread`
+              : 'All read'
+          }
+          subtitleVariant={stats?.contacts.unread ? 'warning' : 'success'}
+          isLoading={statsLoading}
+        />
+        <StatCard
+          title="Reviews"
+          value={stats?.reviews.total || 0}
+          icon={Star}
+          subtitle={
+            stats?.reviews.pending
+              ? `${stats.reviews.pending} pending`
+              : 'All reviewed'
+          }
+          subtitleVariant={stats?.reviews.pending ? 'warning' : 'success'}
+          isLoading={statsLoading}
+        />
+      </div>
+
+      {/* Secondary Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Clients Showcased"
+          value={stats?.clients.active || 0}
+          icon={Users}
+          subtitle={
+            stats?.clients.total
+              ? `${stats.clients.total} total`
+              : undefined
+          }
+          isLoading={statsLoading}
+        />
+        <StatCard
+          title="Approved Reviews"
+          value={stats?.reviews.approved || 0}
+          icon={Star}
+          subtitle={
+            stats?.reviews.averageRating
+              ? `${stats.reviews.averageRating.toFixed(1)} avg rating`
+              : undefined
+          }
+          subtitleVariant="success"
+          isLoading={statsLoading}
+        />
+        <StatCard
+          title="Active Products"
+          value={stats?.products.active || 0}
+          icon={Package}
+          subtitle={
+            stats?.products.total !== stats?.products.active
+              ? `${(stats?.products.total || 0) - (stats?.products.active || 0)} inactive`
+              : 'All active'
+          }
+          isLoading={statsLoading}
+        />
+        <StatCard
+          title="Contacts Replied"
+          value={stats?.contacts.replied || 0}
+          icon={MessageSquare}
+          subtitle={
+            stats?.contacts.total
+              ? `${Math.round(((stats.contacts.replied || 0) / stats.contacts.total) * 100)}% response rate`
+              : undefined
+          }
+          subtitleVariant="success"
+          isLoading={statsLoading}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-4">
-            <CardTitle>Recent Events</CardTitle>
-            <Badge variant="outline">{recentEvents.length} events</Badge>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentEvents.slice(0, 6).map((event, index) => {
-                const Icon = getEventIcon(event.type);
-                return (
-                  <div
-                    key={index}
-                    className="flex items-start gap-3 pb-3 border-b border-border last:border-0 last:pb-0"
-                  >
-                    <div className="p-2 rounded bg-muted">
-                      <Icon className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <Badge variant={getEventBadgeVariant(event.type)} className="text-xs">
-                          {event.type.replace("_", " ")}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">{event.page}</span>
-                      </div>
-                      <p className="text-sm truncate">{event.details}</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                      <Clock className="h-3 w-3" />
-                      {event.time}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
+        {/* Recent Contact Submissions */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-4">
             <CardTitle>Recent Submissions</CardTitle>
-            <Badge variant="outline">{recentSubmissions.filter((s) => s.status === "unread").length} unread</Badge>
+            {stats?.contacts.unread ? (
+              <Badge variant="default">{stats.contacts.unread} unread</Badge>
+            ) : (
+              <Badge variant="outline">All read</Badge>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentSubmissions.map((submission, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 pb-3 border-b border-border last:border-0 last:pb-0"
-                >
+            {contactsLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </div>
+            ) : recentContacts && recentContacts.length > 0 ? (
+              <div className="space-y-4">
+                {recentContacts.map((contact) => (
                   <div
-                    className={`w-2 h-2 rounded-full mt-2 ${
-                      submission.status === "unread" ? "bg-primary" : "bg-muted"
-                    }`}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="font-medium">{submission.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {submission.company}
-                      </span>
+                    key={contact.id}
+                    className="flex items-start gap-3 pb-3 border-b border-border last:border-0 last:pb-0"
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                        contact.isRead ? 'bg-muted' : 'bg-primary'
+                      }`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span
+                          className={
+                            contact.isRead ? 'font-medium' : 'font-semibold'
+                          }
+                        >
+                          {contact.name}
+                        </span>
+                        {contact.company && (
+                          <span className="text-xs text-muted-foreground">
+                            {contact.company}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {getSubjectLabel(contact.subject)}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">{submission.subject}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                      <Clock className="h-3 w-3" />
+                      {formatRelativeTime(contact.createdAt)}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                    <Clock className="h-3 w-3" />
-                    {submission.time}
+                ))}
+                <Link href="/admin/contacts">
+                  <Button variant="outline" className="w-full mt-2">
+                    View All Contacts
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <MessageSquare className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  No contact submissions yet
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Reviews */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between gap-4">
+            <CardTitle>Recent Reviews</CardTitle>
+            {stats?.reviews.pending ? (
+              <Badge variant="secondary">{stats.reviews.pending} pending</Badge>
+            ) : (
+              <Badge variant="outline">All reviewed</Badge>
+            )}
+          </CardHeader>
+          <CardContent>
+            {reviewsLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </div>
+            ) : recentReviews && recentReviews.length > 0 ? (
+              <div className="space-y-4">
+                {recentReviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="flex items-start gap-3 pb-3 border-b border-border last:border-0 last:pb-0"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="font-medium">{review.clientName}</span>
+                        <Badge
+                          variant={
+                            review.status === 'approved'
+                              ? 'default'
+                              : review.status === 'rejected'
+                                ? 'destructive'
+                                : 'secondary'
+                          }
+                          className="text-xs"
+                        >
+                          {review.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StarRating rating={review.rating} />
+                        {review.company && (
+                          <span className="text-xs text-muted-foreground">
+                            {review.company}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                      <Clock className="h-3 w-3" />
+                      {formatRelativeTime(review.createdAt)}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+                <Link href="/admin/reviews">
+                  <Button variant="outline" className="w-full mt-2">
+                    View All Reviews
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Star className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                <p className="text-sm text-muted-foreground">No reviews yet</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <Link href="/admin/products">
+              <Button variant="outline" className="w-full h-auto py-4 flex-col">
+                <Package className="h-6 w-6 mb-2" />
+                <span>Add Product</span>
+              </Button>
+            </Link>
+            <Link href="/admin/categories">
+              <Button variant="outline" className="w-full h-auto py-4 flex-col">
+                <FolderOpen className="h-6 w-6 mb-2" />
+                <span>Add Category</span>
+              </Button>
+            </Link>
+            <Link href="/admin/clients">
+              <Button variant="outline" className="w-full h-auto py-4 flex-col">
+                <Users className="h-6 w-6 mb-2" />
+                <span>Add Client</span>
+              </Button>
+            </Link>
+            <Link href="/admin/content">
+              <Button variant="outline" className="w-full h-auto py-4 flex-col">
+                <TrendingUp className="h-6 w-6 mb-2" />
+                <span>Edit Content</span>
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Alerts/Notifications */}
+      {(stats?.contacts.unread || stats?.reviews.pending) && (
+        <Card className="border-orange-200 dark:border-orange-900 bg-orange-50 dark:bg-orange-950/30">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-orange-700 dark:text-orange-400">
+                  Items need attention
+                </h4>
+                <ul className="text-sm text-orange-600 dark:text-orange-400/80 mt-1 space-y-1">
+                  {stats?.contacts.unread > 0 && (
+                    <li>
+                      • {stats.contacts.unread} unread contact submission
+                      {stats.contacts.unread > 1 ? 's' : ''}
+                    </li>
+                  )}
+                  {stats?.reviews.pending > 0 && (
+                    <li>
+                      • {stats.reviews.pending} review
+                      {stats.reviews.pending > 1 ? 's' : ''} pending approval
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
