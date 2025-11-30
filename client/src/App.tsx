@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AnimatePresence, motion } from "framer-motion";
 
 import Navbar from "@/components/Navbar";
@@ -88,9 +88,17 @@ function PublicRouter() {
   );
 }
 
-function AdminRouter({ onLogout }: { onLogout: () => void }) {
+function AdminRouter() {
+  const { signOut } = useAuth();
+  const [, setLocation] = useLocation();
+
+  const handleLogout = async () => {
+    await signOut();
+    setLocation("/admin");
+  };
+
   return (
-    <AdminLayout onLogout={onLogout}>
+    <AdminLayout onLogout={handleLogout}>
       <Switch>
         <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/admin/products" component={AdminProducts} />
@@ -106,36 +114,48 @@ function AdminRouter({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-function App() {
-  const [location, setLocation] = useLocation();
-  // todo: remove mock functionality - replace with Firebase auth state
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+function LoadingSpinner() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  );
+}
+
+function AppContent() {
+  const [location] = useLocation();
+  const { isAdmin, loading } = useAuth();
 
   const isAdminRoute = location.startsWith("/admin");
 
-  const handleLogin = () => {
-    setIsAdminLoggedIn(true);
-  };
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
-  const handleLogout = () => {
-    setIsAdminLoggedIn(false);
-    setLocation("/admin");
-  };
+  return (
+    <>
+      <Toaster />
+      {isAdminRoute ? (
+        isAdmin ? (
+          <AdminRouter />
+        ) : (
+          <AdminLogin />
+        )
+      ) : (
+        <PublicRouter />
+      )}
+    </>
+  );
+}
 
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
-          <Toaster />
-          {isAdminRoute ? (
-            isAdminLoggedIn ? (
-              <AdminRouter onLogout={handleLogout} />
-            ) : (
-              <AdminLogin onLogin={handleLogin} />
-            )
-          ) : (
-            <PublicRouter />
-          )}
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

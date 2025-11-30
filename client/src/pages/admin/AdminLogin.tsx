@@ -1,12 +1,19 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useLocation } from "wouter";
-import { Globe, Lock, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useLocation } from 'wouter';
+import { Globe, Lock, Mail, AlertCircle, ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Form,
   FormControl,
@@ -14,56 +21,82 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email('Please enter a valid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-interface AdminLoginProps {
-  onLogin: () => void;
-}
-
-export default function AdminLogin({ onLogin }: AdminLoginProps) {
+export default function AdminLogin() {
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { signIn, error: authError } = useAuth();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
   const handleSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    console.log("Admin login attempt:", data.email);
-    
-    // todo: remove mock functionality - replace with Firebase auth
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    if (data.email === "admin@theatlasexports.com" && data.password === "admin123") {
+    setLoginError(null);
+
+    try {
+      await signIn(data.email, data.password);
       toast({
-        title: "Welcome back!",
+        title: 'Welcome back!',
         description: "You've successfully logged in.",
       });
-      onLogin();
-      setLocation("/admin/dashboard");
-    } else {
-      toast({
-        title: "Login Failed",
-        description: "Invalid email or password. Try admin@theatlasexports.com / admin123",
-        variant: "destructive",
-      });
+      setLocation('/admin/dashboard');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      let errorMessage = 'Invalid email or password.';
+
+      if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email.';
+      } else if (
+        error.code === 'auth/wrong-password' ||
+        error.code === 'auth/invalid-credential'
+      ) {
+        errorMessage = 'Invalid Credentials.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later.';
+      } else if (error.code === 'auth/invalid-api-key') {
+        errorMessage =
+          'Invalid Firebase API key. Please check your configuration.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setLoginError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
+
+  // Check if Firebase is configured
+  const isFirebaseConfigured =
+    import.meta.env.VITE_FIREBASE_API_KEY &&
+    import.meta.env.VITE_FIREBASE_API_KEY !== 'your-api-key';
+
+  const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+  const firestoreUrl =
+    projectId && projectId !== 'your-project-id'
+      ? `https://console.firebase.google.com/project/${projectId}/firestore`
+      : 'https://console.firebase.google.com/';
+
+  // Combined error (auth context error or login error)
+  const displayError = authError || loginError;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -73,13 +106,61 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
             <Globe className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="text-2xl">Admin Portal</CardTitle>
-          <CardDescription>
-            Sign in to manage The Atlas Exports
-          </CardDescription>
+          <CardDescription>Sign in to manage The Atlas Exports</CardDescription>
         </CardHeader>
         <CardContent>
+          {!isFirebaseConfigured && (
+            <Alert
+              variant="destructive"
+              className="mb-4"
+            >
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Firebase Not Configured</AlertTitle>
+              <AlertDescription className="text-sm">
+                Please set up your Firebase configuration in{' '}
+                <code className="bg-muted px-1 rounded">client/.env</code>
+                <br />
+                <a
+                  href="https://console.firebase.google.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline mt-1 inline-flex items-center gap-1"
+                >
+                  Get your config from Firebase Console{' '}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {displayError && (
+            <Alert
+              variant="destructive"
+              className="mb-4"
+            >
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription className="text-sm whitespace-pre-line">
+                {displayError}
+                {displayError.includes('Firestore') && (
+                  <a
+                    href={firestoreUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline mt-2 inline-flex items-center gap-1 text-primary"
+                  >
+                    Open Firebase Console <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-4"
+            >
               <FormField
                 control={form.control}
                 name="email"
@@ -127,16 +208,13 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading}
+                disabled={isLoading || !isFirebaseConfigured}
                 data-testid="button-admin-login"
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
           </Form>
-          <p className="text-xs text-muted-foreground text-center mt-4">
-            Demo: admin@theatlasexports.com / admin123
-          </p>
         </CardContent>
       </Card>
     </div>
