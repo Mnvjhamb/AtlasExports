@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -10,90 +10,304 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Search, Package } from "lucide-react";
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Search,
+  Package,
+  Upload,
+  X,
+  Image as ImageIcon,
+  Loader2,
+} from 'lucide-react';
+import {
+  useProducts,
+  useCategories,
+  useCreateProduct,
+  useUpdateProduct,
+  useDeleteProduct,
+  generateSlug,
+} from '@/hooks/useProducts';
+import {
+  uploadProductImage,
+  isValidImageFile,
+  isValidFileSize,
+} from '@/lib/storage';
+import type { Product } from '@/lib/firestore';
 
-import equipmentImg from "@assets/generated_images/hydraulic_disc_harrow_product.png";
-import riceImg from "@assets/generated_images/premium_basmati_rice_grains.png";
+// Fallback image
+import equipmentImg from '@assets/generated_images/hydraulic_disc_harrow_product.png';
 
-// todo: remove mock functionality - replace with API data
-const initialProducts = [
-  { id: "1", title: "Hydraulic Disc Harrow", category: "agri-equipment", active: true, imageUrl: equipmentImg },
-  { id: "2", title: "Cultivator", category: "agri-equipment", active: true, imageUrl: equipmentImg },
-  { id: "3", title: "Premium Basmati Rice", category: "agri-commodities", active: true, imageUrl: riceImg },
-  { id: "4", title: "Fresh Kinnow", category: "agri-commodities", active: true, imageUrl: riceImg },
-  { id: "5", title: "Modern Dining Set", category: "furniture", active: false, imageUrl: equipmentImg },
-  { id: "6", title: "Italian Marble Slabs", category: "marble-granite", active: true, imageUrl: equipmentImg },
-];
+interface ProductFormData {
+  name: string;
+  description: string;
+  categoryId: string;
+  specifications: string;
+  minOrderQuantity: number;
+  unit: string;
+  isFeatured: boolean;
+  isActive: boolean;
+  imageUrls: string[];
+}
 
-const categories = [
-  { id: "agri-equipment", name: "Agriculture Equipment" },
-  { id: "agri-commodities", name: "Agriculture Commodities" },
-  { id: "furniture", name: "Furniture" },
-  { id: "marble-granite", name: "Marble & Granite" },
-  { id: "pvc-wpc", name: "PVC & WPC Sheets" },
-];
+const initialFormData: ProductFormData = {
+  name: '',
+  description: '',
+  categoryId: '',
+  specifications: '',
+  minOrderQuantity: 1,
+  unit: 'units',
+  isFeatured: false,
+  isActive: true,
+  imageUrls: [],
+};
 
 export default function AdminProducts() {
-  const [products, setProducts] = useState(initialProducts);
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showDialog, setShowDialog] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<typeof initialProducts[0] | null>(null);
+  const [editingProduct, setEditingProduct] = useState<
+    (Product & { id: string }) | null
+  >(null);
+  const [formData, setFormData] = useState<ProductFormData>(initialFormData);
+  const [isUploading, setIsUploading] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const filteredProducts = products.filter((p) => {
-    const matchesCategory = filterCategory === "all" || p.category === filterCategory;
-    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
+  // Fetch data
+  const {
+    data: products,
+    isLoading: productsLoading,
+    error: productsError,
+  } = useProducts(false); // Get all products including inactive
+
+  const { data: categories, isLoading: categoriesLoading } = useCategories(false);
+
+  // Mutations
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
+  const deleteProduct = useDeleteProduct();
+
+  // Filter products
+  const filteredProducts = products?.filter((p) => {
+    const matchesCategory =
+      filterCategory === 'all' || p.categoryId === filterCategory;
+    const matchesSearch = (p.name || '')
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  const getCategoryName = (id: string) => categories.find((c) => c.id === id)?.name || id;
-
-  const handleToggleActive = (id: string) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, active: !p.active } : p))
-    );
-    toast({ title: "Product status updated" });
+  const getCategoryName = (categoryId: string) => {
+    const category = categories?.find((c) => c.id === categoryId);
+    return category?.name || categoryId;
   };
 
-  const handleDelete = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-    toast({ title: "Product deleted" });
+  const handleToggleActive = async (product: Product & { id: string }) => {
+    try {
+      await updateProduct.mutateAsync({
+        id: product.id,
+        data: { isActive: !product.isActive },
+      });
+      toast({ title: 'Product status updated' });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update product status',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleEdit = (product: typeof initialProducts[0]) => {
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteProduct.mutateAsync(deleteId);
+      toast({ title: 'Product deleted' });
+      setDeleteId(null);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete product',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEdit = (product: Product & { id: string }) => {
     setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      description: product.description,
+      categoryId: product.categoryId,
+      specifications: product.specifications
+        ? Object.entries(product.specifications)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join('\n')
+        : '',
+      minOrderQuantity: product.minOrderQuantity || 1,
+      unit: product.unit || 'units',
+      isFeatured: product.isFeatured || false,
+      isActive: product.isActive,
+      imageUrls: product.imageUrls || [],
+    });
     setShowDialog(true);
   };
 
   const handleAdd = () => {
     setEditingProduct(null);
+    setFormData(initialFormData);
     setShowDialog(true);
   };
 
-  const handleSave = () => {
-    toast({ title: editingProduct ? "Product updated" : "Product added" });
-    setShowDialog(false);
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const validFiles: File[] = [];
+    for (const file of Array.from(files)) {
+      if (!isValidImageFile(file)) {
+        toast({
+          title: 'Invalid file type',
+          description: `${file.name} is not a valid image file`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+      if (!isValidFileSize(file, 5)) {
+        toast({
+          title: 'File too large',
+          description: `${file.name} exceeds 5MB limit`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      const uploadPromises = validFiles.map((file) =>
+        uploadProductImage(file, editingProduct?.id)
+      );
+      const urls = await Promise.all(uploadPromises);
+      setFormData((prev) => ({
+        ...prev,
+        imageUrls: [...prev.imageUrls, ...urls],
+      }));
+      toast({ title: `${urls.length} image(s) uploaded` });
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description: 'Failed to upload images',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+    }));
+  };
+
+  const parseSpecifications = (text: string): Record<string, string> => {
+    const specs: Record<string, string> = {};
+    text.split('\n').forEach((line) => {
+      const [key, ...valueParts] = line.split(':');
+      if (key && valueParts.length > 0) {
+        specs[key.trim()] = valueParts.join(':').trim();
+      }
+    });
+    return specs;
+  };
+
+  const handleSave = async () => {
+    if (!formData.name || !formData.categoryId) {
+      toast({
+        title: 'Missing fields',
+        description: 'Name and category are required',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const productData = {
+      name: formData.name,
+      description: formData.description,
+      categoryId: formData.categoryId,
+      slug: generateSlug(formData.name),
+      specifications: parseSpecifications(formData.specifications),
+      minOrderQuantity: formData.minOrderQuantity,
+      unit: formData.unit,
+      isFeatured: formData.isFeatured,
+      isActive: formData.isActive,
+      imageUrls: formData.imageUrls,
+    };
+
+    try {
+      if (editingProduct) {
+        await updateProduct.mutateAsync({
+          id: editingProduct.id,
+          data: productData,
+        });
+        toast({ title: 'Product updated' });
+      } else {
+        await createProduct.mutateAsync(productData);
+        toast({ title: 'Product created' });
+      }
+      setShowDialog(false);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: `Failed to ${editingProduct ? 'update' : 'create'} product`,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const isLoading = productsLoading || categoriesLoading;
+  const isSaving = createProduct.isPending || updateProduct.isPending;
 
   return (
     <div className="space-y-6">
@@ -122,12 +336,15 @@ export default function AdminProducts() {
               />
             </div>
             <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-[200px]" data-testid="select-filter-category">
+              <SelectTrigger
+                className="w-[200px]"
+                data-testid="select-filter-category"
+              >
                 <SelectValue placeholder="Filter by category" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((cat) => (
+                {categories?.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
                     {cat.name}
                   </SelectItem>
@@ -137,12 +354,24 @@ export default function AdminProducts() {
           </div>
         </CardHeader>
         <CardContent>
-          {filteredProducts.length > 0 ? (
+          {isLoading ? (
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          ) : productsError ? (
+            <div className="text-center py-12">
+              <Package className="h-12 w-12 mx-auto text-destructive/50 mb-4" />
+              <p className="text-muted-foreground">Failed to load products</p>
+            </div>
+          ) : filteredProducts && filteredProducts.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
                   <TableHead>Category</TableHead>
+                  <TableHead>Featured</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -153,25 +382,32 @@ export default function AdminProducts() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <img
-                          src={product.imageUrl}
-                          alt={product.title}
+                          src={product.imageUrls?.[0] || equipmentImg}
+                          alt={product.name}
                           className="w-12 h-12 rounded object-cover"
                         />
-                        <span className="font-medium">{product.title}</span>
+                        <span className="font-medium">{product.name}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{getCategoryName(product.category)}</Badge>
+                      <Badge variant="outline">
+                        {getCategoryName(product.categoryId)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={product.isFeatured ? 'default' : 'secondary'}>
+                        {product.isFeatured ? 'Featured' : 'Regular'}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Switch
-                          checked={product.active}
-                          onCheckedChange={() => handleToggleActive(product.id)}
+                          checked={product.isActive}
+                          onCheckedChange={() => handleToggleActive(product)}
                           data-testid={`switch-active-${product.id}`}
                         />
                         <span className="text-sm text-muted-foreground">
-                          {product.active ? "Active" : "Inactive"}
+                          {product.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </div>
                     </TableCell>
@@ -188,7 +424,7 @@ export default function AdminProducts() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDelete(product.id)}
+                          onClick={() => setDeleteId(product.id)}
                           data-testid={`button-delete-${product.id}`}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
@@ -208,29 +444,40 @@ export default function AdminProducts() {
         </CardContent>
       </Card>
 
+      {/* Add/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingProduct ? "Edit Product" : "Add Product"}</DialogTitle>
+            <DialogTitle>
+              {editingProduct ? 'Edit Product' : 'Add Product'}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Title</Label>
+                <Label>Name *</Label>
                 <Input
-                  defaultValue={editingProduct?.title}
-                  placeholder="Product title"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  placeholder="Product name"
                   data-testid="input-product-title"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Category</Label>
-                <Select defaultValue={editingProduct?.category}>
+                <Label>Category *</Label>
+                <Select
+                  value={formData.categoryId}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, categoryId: value }))
+                  }
+                >
                   <SelectTrigger data-testid="select-product-category">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
+                    {categories?.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>
                         {cat.name}
                       </SelectItem>
@@ -239,45 +486,188 @@ export default function AdminProducts() {
                 </Select>
               </div>
             </div>
+
             <div className="space-y-2">
               <Label>Description</Label>
               <Textarea
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 placeholder="Product description..."
                 className="min-h-[100px]"
                 data-testid="input-product-description"
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Min Order Quantity</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={formData.minOrderQuantity}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      minOrderQuantity: parseInt(e.target.value) || 1,
+                    }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Unit</Label>
+                <Input
+                  value={formData.unit}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, unit: e.target.value }))
+                  }
+                  placeholder="e.g., pieces, kg, tons"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label>Specifications</Label>
+              <Label>Specifications (one per line, format: Key: Value)</Label>
               <Textarea
-                placeholder="Key: Value (one per line)"
+                value={formData.specifications}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    specifications: e.target.value,
+                  }))
+                }
+                placeholder="Weight: 500kg&#10;Dimensions: 2m x 1m x 1m&#10;Material: Steel"
                 className="min-h-[100px]"
                 data-testid="input-product-specs"
               />
             </div>
+
+            {/* Image Upload */}
             <div className="space-y-2">
-              <Label>Image URLs</Label>
-              <Textarea
-                placeholder="One URL per line"
-                className="min-h-[80px]"
-                data-testid="input-product-images"
-              />
+              <Label>Images</Label>
+              <div className="border-2 border-dashed border-border rounded-lg p-4">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <label
+                  htmlFor="image-upload"
+                  className="flex flex-col items-center justify-center cursor-pointer py-4"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  ) : (
+                    <>
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-sm text-muted-foreground">
+                        Click to upload images (max 5MB each)
+                      </span>
+                    </>
+                  )}
+                </label>
+
+                {formData.imageUrls.length > 0 && (
+                  <div className="grid grid-cols-4 gap-2 mt-4">
+                    {formData.imageUrls.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Product image ${index + 1}`}
+                          className="w-full aspect-square object-cover rounded"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {formData.imageUrls.length === 0 && (
+                  <div className="flex items-center justify-center py-4 text-muted-foreground">
+                    <ImageIcon className="h-12 w-12 opacity-50" />
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Switch id="active" defaultChecked={editingProduct?.active ?? true} />
-              <Label htmlFor="active">Active</Label>
+
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="featured"
+                  checked={formData.isFeatured}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, isFeatured: checked }))
+                  }
+                />
+                <Label htmlFor="featured">Featured Product</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="active"
+                  checked={formData.isActive}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, isActive: checked }))
+                  }
+                />
+                <Label htmlFor="active">Active</Label>
+              </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} data-testid="button-save-product">
-              {editingProduct ? "Update" : "Create"} Product
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              data-testid="button-save-product"
+            >
+              {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {editingProduct ? 'Update' : 'Create'} Product
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Product</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this product? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteProduct.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

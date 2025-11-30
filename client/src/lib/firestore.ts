@@ -13,17 +13,17 @@ import {
   DocumentData,
   QueryConstraint,
   Timestamp,
-} from "firebase/firestore";
-import { db } from "./firebase";
+} from 'firebase/firestore';
+import { db } from './firebase';
 
 // Collection names
 export const COLLECTIONS = {
-  USERS: "users",
-  CATEGORIES: "categories",
-  PRODUCTS: "products",
-  REVIEWS: "reviews",
-  CONTACTS: "contacts",
-  CONTENT: "content",
+  USERS: 'users',
+  CATEGORIES: 'categories',
+  PRODUCTS: 'products',
+  REVIEWS: 'reviews',
+  CONTACTS: 'contacts',
+  CONTENT: 'content',
 } as const;
 
 // Types
@@ -84,7 +84,7 @@ export interface AdminUser {
   id?: string;
   email: string;
   displayName: string;
-  role: "admin" | "super_admin";
+  role: 'admin' | 'super_admin';
   createdAt: Timestamp;
   lastLogin?: Timestamp;
 }
@@ -101,36 +101,58 @@ export async function getAll<T extends DocumentData>(
   collectionName: string,
   ...queryConstraints: QueryConstraint[]
 ): Promise<(T & { id: string })[]> {
-  const ref = collection(db, collectionName);
-  const q = queryConstraints.length > 0 ? query(ref, ...queryConstraints) : ref;
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as (T & { id: string })[];
+  try {
+    const ref = collection(db, collectionName);
+    const q =
+      queryConstraints.length > 0 ? query(ref, ...queryConstraints) : ref;
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as (T & { id: string })[];
+  } catch (error: any) {
+    console.error(`Error fetching ${collectionName}:`, error);
+    // If it's an index error, log helpful message
+    if (error.code === 'failed-precondition') {
+      console.error(
+        'This query requires a composite index. Check the Firebase Console for the link to create it.'
+      );
+    }
+    throw error;
+  }
 }
 
 export async function getById<T extends DocumentData>(
   collectionName: string,
   id: string
 ): Promise<(T & { id: string }) | null> {
-  const docRef = doc(db, collectionName, id);
-  const snapshot = await getDoc(docRef);
-  if (!snapshot.exists()) return null;
-  return { id: snapshot.id, ...snapshot.data() } as T & { id: string };
+  try {
+    const docRef = doc(db, collectionName, id);
+    const snapshot = await getDoc(docRef);
+    if (!snapshot.exists()) return null;
+    return { id: snapshot.id, ...snapshot.data() } as T & { id: string };
+  } catch (error) {
+    console.error(`Error fetching ${collectionName}/${id}:`, error);
+    throw error;
+  }
 }
 
 export async function create<T extends DocumentData>(
   collectionName: string,
-  data: Omit<T, "id">
+  data: Omit<T, 'id'>
 ): Promise<string> {
-  const ref = collection(db, collectionName);
-  const docRef = await addDoc(ref, {
-    ...data,
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  });
-  return docRef.id;
+  try {
+    const ref = collection(db, collectionName);
+    const docRef = await addDoc(ref, {
+      ...data,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error(`Error creating in ${collectionName}:`, error);
+    throw error;
+  }
 }
 
 export async function update<T extends DocumentData>(
@@ -138,34 +160,62 @@ export async function update<T extends DocumentData>(
   id: string,
   data: Partial<T>
 ): Promise<void> {
-  const docRef = doc(db, collectionName, id);
-  await updateDoc(docRef, {
-    ...data,
-    updatedAt: Timestamp.now(),
-  });
+  try {
+    const docRef = doc(db, collectionName, id);
+    await updateDoc(docRef, {
+      ...data,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error(`Error updating ${collectionName}/${id}:`, error);
+    throw error;
+  }
 }
 
 export async function remove(
   collectionName: string,
   id: string
 ): Promise<void> {
-  const docRef = doc(db, collectionName, id);
-  await deleteDoc(docRef);
+  try {
+    const docRef = doc(db, collectionName, id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error(`Error deleting ${collectionName}/${id}:`, error);
+    throw error;
+  }
 }
 
 // Category specific functions
 export async function getCategories(activeOnly = false) {
-  const constraints: QueryConstraint[] = [orderBy("order", "asc")];
-  if (activeOnly) {
-    constraints.unshift(where("isActive", "==", true));
+  try {
+    // Simple query without compound index requirement
+    const ref = collection(db, COLLECTIONS.CATEGORIES);
+    const snapshot = await getDocs(ref);
+
+    let results = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as (Category & { id: string })[];
+
+    // Filter in memory if activeOnly
+    if (activeOnly) {
+      results = results.filter((cat) => cat.isActive);
+    }
+
+    // Sort by order
+    results.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    return results;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    throw error;
   }
-  return getAll<Category>(COLLECTIONS.CATEGORIES, ...constraints);
 }
 
 export async function getCategoryBySlug(slug: string) {
   const categories = await getAll<Category>(
     COLLECTIONS.CATEGORIES,
-    where("slug", "==", slug),
+    where('slug', '==', slug),
     limit(1)
   );
   return categories[0] || null;
@@ -173,29 +223,72 @@ export async function getCategoryBySlug(slug: string) {
 
 // Product specific functions
 export async function getProducts(activeOnly = false, categoryId?: string) {
-  const constraints: QueryConstraint[] = [orderBy("createdAt", "desc")];
-  if (activeOnly) {
-    constraints.unshift(where("isActive", "==", true));
+  try {
+    // Simple query - filter in memory to avoid composite index requirements
+    const ref = collection(db, COLLECTIONS.PRODUCTS);
+    const snapshot = await getDocs(ref);
+
+    let results = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as (Product & { id: string })[];
+
+    // Filter in memory
+    if (activeOnly) {
+      results = results.filter((product) => product.isActive);
+    }
+    if (categoryId) {
+      results = results.filter((product) => product.categoryId === categoryId);
+    }
+
+    // Sort by createdAt descending (newest first)
+    results.sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+
+    return results;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    throw error;
   }
-  if (categoryId) {
-    constraints.unshift(where("categoryId", "==", categoryId));
-  }
-  return getAll<Product>(COLLECTIONS.PRODUCTS, ...constraints);
 }
 
 export async function getFeaturedProducts() {
-  return getAll<Product>(
-    COLLECTIONS.PRODUCTS,
-    where("isActive", "==", true),
-    where("isFeatured", "==", true),
-    limit(6)
-  );
+  try {
+    // Simple query - filter in memory
+    const ref = collection(db, COLLECTIONS.PRODUCTS);
+    const snapshot = await getDocs(ref);
+
+    let results = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as (Product & { id: string })[];
+
+    // Filter for active and featured products
+    results = results.filter(
+      (product) => product.isActive && product.isFeatured
+    );
+
+    // Sort by createdAt and limit to 6
+    results.sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+
+    return results.slice(0, 6);
+  } catch (error) {
+    console.error('Error fetching featured products:', error);
+    throw error;
+  }
 }
 
 export async function getProductBySlug(slug: string) {
   const products = await getAll<Product>(
     COLLECTIONS.PRODUCTS,
-    where("slug", "==", slug),
+    where('slug', '==', slug),
     limit(1)
   );
   return products[0] || null;
@@ -203,15 +296,36 @@ export async function getProductBySlug(slug: string) {
 
 // Review specific functions
 export async function getApprovedReviews() {
-  return getAll<Review>(
-    COLLECTIONS.REVIEWS,
-    where("isApproved", "==", true),
-    orderBy("createdAt", "desc")
-  );
+  try {
+    const ref = collection(db, COLLECTIONS.REVIEWS);
+    const snapshot = await getDocs(ref);
+
+    let results = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as (Review & { id: string })[];
+
+    // Filter approved reviews
+    results = results.filter((review) => review.isApproved);
+
+    // Sort by createdAt descending
+    results.sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+
+    return results;
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    throw error;
+  }
 }
 
 // Contact specific functions
-export async function submitContact(data: Omit<ContactSubmission, "id" | "isRead" | "createdAt">) {
+export async function submitContact(
+  data: Omit<ContactSubmission, 'id' | 'isRead' | 'createdAt'>
+) {
   return create<ContactSubmission>(COLLECTIONS.CONTACTS, {
     ...data,
     isRead: false,
@@ -220,24 +334,46 @@ export async function submitContact(data: Omit<ContactSubmission, "id" | "isRead
 }
 
 export async function getUnreadContacts() {
-  return getAll<ContactSubmission>(
-    COLLECTIONS.CONTACTS,
-    where("isRead", "==", false),
-    orderBy("createdAt", "desc")
-  );
+  try {
+    const ref = collection(db, COLLECTIONS.CONTACTS);
+    const snapshot = await getDocs(ref);
+
+    let results = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as (ContactSubmission & { id: string })[];
+
+    // Filter unread
+    results = results.filter((contact) => !contact.isRead);
+
+    // Sort by createdAt descending
+    results.sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+
+    return results;
+  } catch (error) {
+    console.error('Error fetching contacts:', error);
+    throw error;
+  }
 }
 
 // Content specific functions
 export async function getContent(key: string) {
   const contents = await getAll<SiteContent>(
     COLLECTIONS.CONTENT,
-    where("key", "==", key),
+    where('key', '==', key),
     limit(1)
   );
   return contents[0] || null;
 }
 
-export async function updateContent(key: string, value: string | Record<string, any>) {
+export async function updateContent(
+  key: string,
+  value: string | Record<string, any>
+) {
   const existing = await getContent(key);
   if (existing) {
     return update<SiteContent>(COLLECTIONS.CONTENT, existing.id, { value });
@@ -249,4 +385,3 @@ export async function updateContent(key: string, value: string | Record<string, 
     });
   }
 }
-

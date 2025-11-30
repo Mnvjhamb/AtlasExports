@@ -1,99 +1,78 @@
-import { Link } from "wouter";
-import { motion } from "framer-motion";
-import HeroCarousel from "@/components/HeroCarousel";
-import CategoryCard from "@/components/CategoryCard";
-import ProductCard from "@/components/ProductCard";
-import TrustIndicators from "@/components/TrustIndicators";
-import ClientCard from "@/components/ClientCard";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { Link } from 'wouter';
+import { motion } from 'framer-motion';
+import HeroCarousel from '@/components/HeroCarousel';
+import CategoryCard from '@/components/CategoryCard';
+import ProductCard from '@/components/ProductCard';
+import TrustIndicators from '@/components/TrustIndicators';
+import ClientCard from '@/components/ClientCard';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowRight } from 'lucide-react';
+import { useCategories, useFeaturedProducts } from '@/hooks/useProducts';
 
-import equipmentImg from "@assets/generated_images/hydraulic_disc_harrow_product.png";
-import riceImg from "@assets/generated_images/premium_basmati_rice_grains.png";
-import furnitureImg from "@assets/generated_images/modern_wooden_furniture.png";
-import marbleImg from "@assets/generated_images/marble_granite_stone_slabs.png";
-import cultivatorImg from "@assets/generated_images/farm_cultivator_equipment.png";
-import discPloughImg from "@assets/generated_images/disc_plough_equipment.png";
-import kinnowImg from "@assets/generated_images/fresh_kinnow_citrus_fruits.png";
+// Fallback images for when products don't have images
+import equipmentImg from '@assets/generated_images/hydraulic_disc_harrow_product.png';
+import marbleImg from '@assets/generated_images/marble_granite_stone_slabs.png';
 
-// todo: remove mock functionality - replace with API data
-const categories = [
-  { id: "agri-equipment", name: "Agriculture Equipment", imageUrl: equipmentImg, productCount: 12 },
-  { id: "agri-commodities", name: "Agriculture Commodities", imageUrl: riceImg, productCount: 8 },
-  { id: "furniture", name: "All Kinds of Furniture", imageUrl: furnitureImg, productCount: 15 },
-  { id: "marble-granite", name: "Marble & Granite", imageUrl: marbleImg, productCount: 10 },
-];
-
-// todo: remove mock functionality - replace with API data
-const featuredProducts = [
-  {
-    id: "1",
-    title: "Hydraulic Disc Harrow",
-    category: "Agriculture Equipment",
-    description: "Heavy-duty disc harrow for efficient soil preparation. Suitable for 45-75 HP tractors.",
-    imageUrl: equipmentImg,
-  },
-  {
-    id: "2",
-    title: "Premium Basmati Rice",
-    category: "Agriculture Commodities",
-    description: "Extra-long grain premium basmati rice. Aged for 2 years for perfect aroma and taste.",
-    imageUrl: riceImg,
-  },
-  {
-    id: "3",
-    title: "Farm Cultivator",
-    category: "Agriculture Equipment",
-    description: "9-tyne spring loaded cultivator for deep tillage. Robust construction for heavy use.",
-    imageUrl: cultivatorImg,
-  },
-  {
-    id: "4",
-    title: "Disc Plough",
-    category: "Agriculture Equipment",
-    description: "3-disc heavy-duty plough for primary tillage. Ideal for tough and hard soils.",
-    imageUrl: discPloughImg,
-  },
-  {
-    id: "5",
-    title: "Fresh Kinnow",
-    category: "Agriculture Commodities",
-    description: "Premium quality Punjab Kinnow mandarins. Sweet, juicy, and perfect for export.",
-    imageUrl: kinnowImg,
-  },
-  {
-    id: "6",
-    title: "Modern Furniture Collection",
-    category: "Furniture",
-    description: "Contemporary wooden furniture for home and office. Crafted with premium materials.",
-    imageUrl: furnitureImg,
-  },
-];
-
-// todo: remove mock functionality - replace with API data
+// Mock clients data (can be moved to Firestore later)
 const clients = [
-  { name: "AgriTech Solutions", country: "United Arab Emirates" },
-  { name: "Global Harvest Co.", country: "United Kingdom" },
-  { name: "FarmPro Industries", country: "Australia" },
-  { name: "Golden Grain Trading", country: "Saudi Arabia" },
-  { name: "Pacific Agriculture", country: "Singapore" },
-  { name: "Euro Agri Imports", country: "Germany" },
-  { name: "AfriTrade LLC", country: "South Africa" },
-  { name: "Canadian Farm Supplies", country: "Canada" },
+  { name: 'AgriTech Solutions', country: 'United Arab Emirates' },
+  { name: 'Global Harvest Co.', country: 'United Kingdom' },
+  { name: 'FarmPro Industries', country: 'Australia' },
+  { name: 'Golden Grain Trading', country: 'Saudi Arabia' },
+  { name: 'Pacific Agriculture', country: 'Singapore' },
+  { name: 'Euro Agri Imports', country: 'Germany' },
+  { name: 'AfriTrade LLC', country: 'South Africa' },
+  { name: 'Canadian Farm Supplies', country: 'Canada' },
 ];
+
+function CategorySkeleton() {
+  return (
+    <div className="space-y-3">
+      <Skeleton className="h-40 w-full rounded-lg" />
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-4 w-1/2" />
+    </div>
+  );
+}
+
+function ProductSkeleton() {
+  return (
+    <div className="space-y-3">
+      <Skeleton className="h-48 w-full rounded-lg" />
+      <Skeleton className="h-4 w-1/4" />
+      <Skeleton className="h-6 w-3/4" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-10 w-full" />
+    </div>
+  );
+}
 
 export default function Home() {
+  const {
+    data: categories,
+    isLoading: categoriesLoading,
+    error: categoriesError,
+  } = useCategories(true);
+
+  const {
+    data: featuredProducts,
+    isLoading: productsLoading,
+    error: productsError,
+  } = useFeaturedProducts();
+
   const handleRequestQuote = (productId: string) => {
-    console.log("Quote requested for product:", productId);
+    console.log('Quote requested for product:', productId);
   };
 
   return (
     <div>
       <HeroCarousel />
 
+      {/* Categories Section */}
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -102,23 +81,49 @@ export default function Home() {
           >
             <h2 className="text-3xl font-bold mb-4">Our Product Categories</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Explore our diverse range of quality products, from agricultural machinery to 
-              premium commodities, furniture, and building materials.
+              Explore our diverse range of quality products, from agricultural
+              machinery to premium commodities, furniture, and building
+              materials.
             </p>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
-              <CategoryCard key={category.id} {...category} index={index} />
-            ))}
-          </div>
+
+          {categoriesLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <CategorySkeleton key={i} />
+              ))}
+            </div>
+          ) : categoriesError ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Failed to load categories. Please try again later.
+            </div>
+          ) : categories && categories.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {categories.slice(0, 4).map((category, index) => (
+                <CategoryCard
+                  key={category.id}
+                  id={category.slug || category.id}
+                  name={category.name}
+                  imageUrl={category.imageUrl || equipmentImg}
+                  productCount={0}
+                  index={index}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No categories available yet.
+            </div>
+          )}
         </div>
       </section>
 
       <TrustIndicators />
 
+      {/* Featured Products Section */}
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             className="flex items-center justify-between mb-12 flex-wrap gap-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -128,27 +133,54 @@ export default function Home() {
             <div>
               <h2 className="text-3xl font-bold mb-2">Featured Products</h2>
               <p className="text-muted-foreground">
-                Discover our best-selling products trusted by businesses worldwide
+                Discover our best-selling products trusted by businesses
+                worldwide
               </p>
             </div>
             <Link href="/products">
-              <Button variant="outline" className="hidden sm:flex" data-testid="button-view-all-products">
+              <Button
+                variant="outline"
+                className="hidden sm:flex"
+                data-testid="button-view-all-products"
+              >
                 View All Products
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProducts.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                {...product}
-                index={index}
-                onRequestQuote={handleRequestQuote}
-              />
-            ))}
-          </div>
-          <motion.div 
+
+          {productsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <ProductSkeleton key={i} />
+              ))}
+            </div>
+          ) : productsError ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Failed to load products. Please try again later.
+            </div>
+          ) : featuredProducts && featuredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredProducts.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  title={product.name}
+                  category={product.categoryId}
+                  description={product.description}
+                  imageUrl={product.imageUrls?.[0] || equipmentImg}
+                  index={index}
+                  onRequestQuote={handleRequestQuote}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No featured products available yet.
+            </div>
+          )}
+
+          <motion.div
             className="mt-8 text-center sm:hidden"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -164,9 +196,10 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Clients Section */}
       <section className="py-16 bg-card border-t border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -187,6 +220,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* CTA Section */}
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -200,19 +234,20 @@ export default function Home() {
                 Partner with Punjab's Trusted Export Company
               </h2>
               <p className="text-muted-foreground mb-6">
-                With over 14 years of experience in international trade, The Atlas Exports 
-                has built a reputation for quality, reliability, and exceptional customer service. 
-                We handle everything from sourcing to shipping, making your import process seamless.
+                With over 14 years of experience in international trade, The
+                Atlas Exports has built a reputation for quality, reliability,
+                and exceptional customer service. We handle everything from
+                sourcing to shipping, making your import process seamless.
               </p>
               <ul className="space-y-3 mb-8">
                 {[
-                  "Quality-assured products with certifications",
-                  "Competitive pricing with flexible payment terms",
-                  "End-to-end logistics support",
-                  "Dedicated account manager for each client",
+                  'Quality-assured products with certifications',
+                  'Competitive pricing with flexible payment terms',
+                  'End-to-end logistics support',
+                  'Dedicated account manager for each client',
                 ].map((item, index) => (
-                  <motion.li 
-                    key={index} 
+                  <motion.li
+                    key={index}
                     className="flex items-center gap-2"
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -231,13 +266,17 @@ export default function Home() {
                   </Button>
                 </Link>
                 <Link href="/reviews">
-                  <Button size="lg" variant="outline" data-testid="button-cta-reviews">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    data-testid="button-cta-reviews"
+                  >
                     See Reviews
                   </Button>
                 </Link>
               </div>
             </motion.div>
-            <motion.div 
+            <motion.div
               className="relative"
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -249,7 +288,7 @@ export default function Home() {
                 alt="Quality products"
                 className="rounded-lg shadow-lg"
               />
-              <motion.div 
+              <motion.div
                 className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-6 rounded-lg hidden lg:block"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
