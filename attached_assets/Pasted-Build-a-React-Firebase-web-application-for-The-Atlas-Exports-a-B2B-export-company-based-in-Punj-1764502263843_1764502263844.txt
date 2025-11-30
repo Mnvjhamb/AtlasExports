@@ -1,0 +1,338 @@
+Build a React + Firebase web application for “The Atlas Exports”, a B2B export company based in Punjab, India, focused on:
+
+Agriculture equipment
+
+Agro commodities (starting with rice)
+
+The app should have:
+
+Public website
+
+Client portal (no login)
+
+Admin portal (with authentication)
+
+Focus mainly on the following PRODUCT and CONTENT requirements:
+
+Product categories and structure
+
+Create two main product categories:
+
+Category A: Agriculture Equipments
+Example products under this:
+
+Hydraulic Disc Harrow
+
+Mould Board Plough
+
+Disc Plough
+
+Reversible Mould Board Plough
+
+Cultivator
+
+Other equipment (ability to add more later through admin)
+
+Category B: Agro Commodities
+Example products under this:
+
+Rice (e.g., Premium Basmati Rice)
+
+Other agro commodities (ability to add more later through admin)
+
+For each product, store and manage:
+
+Title (string)
+
+Category (reference to Agriculture Equipments or Agro Commodities)
+
+Description (short marketing description, 2–4 lines)
+
+Specifications (either a multi-line text or structured key–value data, e.g.:
+
+For equipment: width, weight, tractor HP range, material, usage, etc.
+
+For rice: grain type, length, moisture %, purity %, packaging, origin, etc.)
+
+Multiple image URLs (array of strings)
+
+Active/inactive flag (for hiding products without deleting)
+
+Created/updated timestamps
+
+The public site should show:
+
+A “Products” section or page where:
+
+Users can filter or switch between:
+
+Agriculture Equipments
+
+Agro Commodities
+
+Each product appears as a card with:
+
+Image
+
+Title
+
+Category tag
+
+1–2 line description
+
+“View Details” or “Request Quote” button
+
+A product detail view that shows:
+
+All images (gallery)
+
+Full description
+
+Specifications in a clean layout (like a list or table)
+
+A “Request Quote / Enquiry” form or button
+
+The admin portal must support full CRUD for:
+
+Product categories
+
+Products themselves (including images, specs, description, active flag)
+
+Client portal (no login) – content requirements
+
+Create a client-facing portal page (no authentication required) with:
+
+“Our Clients” section:
+
+List of client names or company names and optionally country/region.
+
+Ability (via admin) to add/edit/remove client entries.
+
+Display them in a grid or list.
+
+Reviews / Testimonials:
+
+Public list of approved reviews with:
+
+Client name
+
+Company
+
+Rating (1–5 stars)
+
+Short comment
+
+“Add Review” form with fields:
+
+Name
+
+Email
+
+Company
+
+Rating (1–5)
+
+Comment
+
+On submit:
+
+Store the review as “pending” (not visible publicly until admin approval).
+
+Contact us:
+
+Contact form for potential buyers:
+
+Name
+
+Email
+
+Company
+
+Message (and optionally subject/purpose)
+
+On submit:
+
+Store submission in database
+
+Send email notification to the site owner / client
+
+Social links:
+
+Show working links for:
+
+WhatsApp
+
+LinkedIn
+
+Instagram
+
+Any other social profiles
+
+These URLs should be editable via admin so the client can change them later.
+
+Additionally, the client portal should be a central “engagement” page where:
+
+Button clicks and important interactions (add review, submit contact form, click social icons) can be stored as events for analytics (e.g., event type, page, timestamp).
+
+Admin portal – product and content management
+
+Implement an admin area (protected by login) with the following capabilities:
+
+a) Authentication
+
+Simple email/password login for admin.
+
+Only authenticated admin can access admin routes.
+
+b) Product categories management
+
+View list of categories (e.g., Agriculture Equipments, Agro Commodities).
+
+Add new category (name, type, status).
+
+Edit existing category.
+
+Delete category.
+
+Toggle active/inactive.
+
+c) Product management (CRUD)
+
+View list of products with:
+
+Title
+
+Category
+
+Active/inactive status
+
+Filter products by category.
+
+Add new product with fields:
+
+Category selection
+
+Title
+
+Description
+
+Specifications (text area or structured)
+
+Multiple image URLs
+
+Active/inactive toggle
+
+Edit product (all fields).
+
+Delete product (soft delete or mark as inactive is fine).
+
+d) Content sections management
+Admin must be able to edit the main informational sections:
+
+About Us
+
+Our Mission
+
+Our Vision
+
+Why Choose Us
+
+Founders / Our Team
+
+Our Clients intro text
+
+Any hero/intro text used on the public home page or client portal
+
+This can be done with simple textareas or a basic rich text editor. Store this content in a “sections” collection so the public pages read from it.
+
+e) Reviews management
+
+View all reviews from client portal:
+
+Filter by Approved / Pending
+
+Approve a pending review (makes it visible on client portal).
+
+Reject/delete a review.
+
+Optional: edit a review comment before approving.
+
+f) Contact submissions
+
+View all contact submissions sent from public site and client portal.
+
+Show:
+
+Name
+
+Email
+
+Company
+
+Message
+
+Date/time
+
+Ability to mark each submission as read/unread.
+
+Optional: delete submissions.
+
+g) Basic analytics (events)
+(Keep it simple, MVP-level.)
+
+Store events (page views, button clicks, form submissions, social clicks) in a collection with:
+
+type (page_view, button_click, form_submit, social_click)
+
+page (e.g., “home”, “products”, “client-portal”)
+
+details (e.g., which button, which social, which product)
+
+timestamp
+
+In admin dashboard, show:
+
+Counts of:
+
+Total events
+
+Total contact form submissions
+
+Total reviews submitted
+
+Simple list of recent events (no need for complex charts in MVP unless easy).
+
+Public site content structure (non-style requirements)
+
+Public site should include:
+
+Home:
+
+Hero section with main heading about exporting rice and agricultural equipment from Punjab.
+
+Short subheading about trust, quality, and long-term partnerships.
+
+CTA buttons:
+
+View Products
+
+Visit Client Portal or Contact
+
+Products:
+
+Structured by the two categories above.
+
+Product cards and details as described.
+
+About:
+
+Based on the supplied About, Mission, Vision, Why Choose Us, Founders, and Clients content.
+
+All text should be editable from admin as noted.
+
+Contact:
+
+Contact form and basic company info (location Punjab, India, email, phone, business hours).
+
+Form submissions stored and visible in admin.
+
