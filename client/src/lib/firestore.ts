@@ -63,7 +63,8 @@ export interface Review {
   rating: number;
   content: string;
   imageUrl?: string;
-  isApproved: boolean;
+  status: 'pending' | 'approved' | 'rejected';
+  isApproved?: boolean; // Legacy field, use status instead
   createdAt: Timestamp;
 }
 
