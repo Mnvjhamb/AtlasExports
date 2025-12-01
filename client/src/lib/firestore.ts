@@ -35,6 +35,7 @@ export interface Category {
   imageUrl: string;
   slug: string;
   isActive: boolean;
+  order?: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

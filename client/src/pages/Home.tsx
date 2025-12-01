@@ -17,7 +17,7 @@ import equipmentImg from '@assets/generated_images/hydraulic_disc_harrow_product
 import marbleImg from '@assets/generated_images/marble_granite_stone_slabs.png';
 
 // Default clients if database is empty
-const defaultClients = [
+const defaultClients: Array<{ id?: string; name: string; country: string; logoUrl?: string }> = [
   { name: 'AgriTech Solutions', country: 'United Arab Emirates' },
   { name: 'Global Harvest Co.', country: 'United Kingdom' },
   { name: 'FarmPro Industries', country: 'Australia' },
@@ -235,10 +235,10 @@ export default function Home() {
             ) : (
               clients.map((client, index) => (
                 <ClientCard
-                  key={'id' in client ? client.id : index}
+                  key={client.id ?? index}
                   name={client.name}
                   country={client.country}
-                  logoUrl={'logoUrl' in client ? client.logoUrl : undefined}
+                  logoUrl={client.logoUrl}
                   index={index}
                 />
               ))
