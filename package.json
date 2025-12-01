@@ -4,15 +4,9 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "dev:client": "cd client && npm run dev",
-    "dev:server": "cd server && npm run dev",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "build:client": "cd client && npm run build",
-    "build:server": "cd server && npm run build",
-    "build": "npm run build:client && npm run build:server",
-    "install:all": "npm install && cd client && npm install && cd ../server && npm install"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
+    "dev": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "preview": "cd client && npm run preview",
+    "install:all": "cd client && npm install"
   }
 }
