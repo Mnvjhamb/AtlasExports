@@ -54,21 +54,11 @@ export interface ContactContent {
   urgentText: string;
 }
 
-export interface ClientPortalContent {
-  heroTitle: string;
-  heroSubtitle: string;
-  quickLinksTitle: string;
-  quickLinksSubtitle: string;
-  contactTitle: string;
-  contactSubtitle: string;
-}
-
 export interface SiteContent {
   companyInfo: CompanyInfo;
   socialLinks: SocialLinks;
   about: AboutContent;
   contact: ContactContent;
-  clientPortal: ClientPortalContent;
   heroSlides: HeroSlide[];
   updatedAt?: Timestamp;
 }
@@ -118,16 +108,6 @@ Our headquarters in Ludhiana, the industrial hub of Punjab, gives us direct acce
       "Ready to discuss your export needs? Get in touch with our team and we'll respond within 24 hours.",
     urgentText:
       'For time-sensitive inquiries, call our direct line or message us on WhatsApp.',
-  },
-  clientPortal: {
-    heroTitle: 'Client Portal',
-    heroSubtitle:
-      'Connect with us, explore our client network, and share your experience working with The Atlas Exports.',
-    quickLinksTitle: 'Quick Links',
-    quickLinksSubtitle: 'Explore client resources and connect with our team',
-    contactTitle: 'Get in Touch',
-    contactSubtitle:
-      'Have questions or want to start a partnership? Reach out to us through any of the channels below.',
   },
   heroSlides: [
     {
@@ -184,10 +164,6 @@ export function useSiteContent() {
             socialLinks: { ...defaultContent.socialLinks, ...data.socialLinks },
             about: { ...defaultContent.about, ...data.about },
             contact: { ...defaultContent.contact, ...data.contact },
-            clientPortal: {
-              ...defaultContent.clientPortal,
-              ...data.clientPortal,
-            },
             heroSlides:
               data.heroSlides?.length > 0
                 ? data.heroSlides

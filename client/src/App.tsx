@@ -15,7 +15,6 @@ import Products from "@/pages/Products";
 import ProductDetail from "@/pages/ProductDetail";
 import About from "@/pages/About";
 import Reviews from "@/pages/Reviews";
-import ClientPortal from "@/pages/ClientPortal";
 import Contact from "@/pages/Contact";
 import NotFound from "@/pages/not-found";
 
@@ -73,9 +72,6 @@ function PublicRouter() {
           </Route>
           <Route path="/reviews">
             <PageTransition><Reviews /></PageTransition>
-          </Route>
-          <Route path="/client-portal">
-            <PageTransition><ClientPortal /></PageTransition>
           </Route>
           <Route path="/contact">
             <PageTransition><Contact /></PageTransition>
