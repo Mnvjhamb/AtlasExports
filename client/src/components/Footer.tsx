@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { Globe, Mail, Phone, MapPin } from 'lucide-react';
 import { SiWhatsapp, SiLinkedin, SiInstagram, SiFacebook } from 'react-icons/si';
 import { Button } from '@/components/ui/button';
@@ -118,7 +118,7 @@ export default function Footer() {
               {quickLinks.map((link) => (
                 <li key={link.href}>
                   <Link
-                    href={link.href}
+                    to={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                     data-testid={`link-footer-${link.label.toLowerCase().replace(' ', '-')}`}
                   >
@@ -142,7 +142,7 @@ export default function Footer() {
                 categoryNames.map((category) => (
                   <li key={category}>
                     <Link
-                      href="/products"
+                      to="/products"
                       className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {category}
@@ -188,10 +188,10 @@ export default function Footer() {
             {footer?.copyrightText || 'All rights reserved.'}
           </p>
           <div className="flex gap-4 text-sm text-muted-foreground">
-            <Link href="/privacy" className="hover:text-foreground">
+            <Link to="/privacy" className="hover:text-foreground">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="hover:text-foreground">
+            <Link to="/terms" className="hover:text-foreground">
               Terms of Service
             </Link>
           </div>

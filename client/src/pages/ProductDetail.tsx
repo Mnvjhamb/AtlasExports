@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'wouter';
+import { useParams, Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -97,7 +97,7 @@ export default function ProductDetail() {
     return (
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Link href="/products">
+          <Link to="/products">
             <Button variant="ghost" className="mb-6">
               <ChevronLeft className="h-4 w-4 mr-2" />
               Back to Products
@@ -109,7 +109,7 @@ export default function ProductDetail() {
             <p className="text-muted-foreground mb-4">
               This product may have been removed or doesn't exist.
             </p>
-            <Link href="/products">
+            <Link to="/products">
               <Button>View All Products</Button>
             </Link>
           </div>
@@ -121,7 +121,7 @@ export default function ProductDetail() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link href="/products">
+        <Link to="/products">
           <Button
             variant="ghost"
             className="mb-6"
@@ -190,7 +190,7 @@ export default function ProductDetail() {
               >
                 Request Quote
               </Button>
-              <Link href="/contact" className="flex-1">
+              <Link to="/contact" className="flex-1">
                 <Button
                   size="lg"
                   variant="outline"

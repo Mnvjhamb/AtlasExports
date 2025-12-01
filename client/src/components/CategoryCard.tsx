@@ -1,7 +1,7 @@
-import { Link } from "wouter";
-import { Card } from "@/components/ui/card";
-import { ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { Link } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
+import { ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface CategoryCardProps {
   id: string;
@@ -25,7 +25,7 @@ export default function CategoryCard({
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <Link href={`/products?category=${id}`}>
+      <Link to={`/products?category=${id}`}>
         <Card
           className="overflow-hidden hover-elevate group cursor-pointer"
           data-testid={`card-category-${id}`}
@@ -40,7 +40,9 @@ export default function CategoryCard({
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
               <h3 className="font-semibold text-lg mb-1">{name}</h3>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/80">{productCount} Products</span>
+                <span className="text-sm text-white/80">
+                  {productCount} Products
+                </span>
                 <ChevronRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-2" />
               </div>
             </div>

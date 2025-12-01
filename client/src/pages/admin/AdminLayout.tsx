@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/ThemeToggle";
 import {
@@ -32,7 +32,7 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children, onLogout }: AdminLayoutProps) {
-  const [location] = useLocation();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -44,7 +44,7 @@ export default function AdminLayout({ children, onLogout }: AdminLayoutProps) {
       >
         <div className="flex flex-col h-full">
           <div className="p-4 border-b border-sidebar-border">
-            <Link href="/" className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2">
               <Globe className="h-8 w-8 text-primary" />
               <div>
                 <div className="font-bold">The Atlas Exports</div>
@@ -55,9 +55,9 @@ export default function AdminLayout({ children, onLogout }: AdminLayoutProps) {
 
           <nav className="flex-1 p-4 space-y-1">
             {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.href} to={item.href}>
                 <Button
-                  variant={location === item.href ? "secondary" : "ghost"}
+                  variant={location.pathname === item.href ? "secondary" : "ghost"}
                   className="w-full justify-start"
                   onClick={() => setSidebarOpen(false)}
                   data-testid={`link-admin-${item.label.toLowerCase()}`}
@@ -70,7 +70,7 @@ export default function AdminLayout({ children, onLogout }: AdminLayoutProps) {
           </nav>
 
           <div className="p-4 border-t border-sidebar-border space-y-2">
-            <Link href="/">
+            <Link to="/">
               <Button variant="outline" className="w-full justify-start">
                 <Globe className="h-4 w-4 mr-3" />
                 View Website

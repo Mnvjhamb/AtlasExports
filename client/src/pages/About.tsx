@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -200,12 +200,12 @@ export default function About() {
               `Join hundreds of satisfied clients worldwide who trust ${companyInfo?.name || 'The Atlas Exports'} for their sourcing needs.`}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact">
+            <Link to="/contact">
               <Button size="lg" data-testid="button-about-contact">
                 Get in Touch
               </Button>
             </Link>
-            <Link href="/products">
+            <Link to="/products">
               <Button
                 size="lg"
                 variant="outline"

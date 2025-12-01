@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import HeroCarousel from '@/components/HeroCarousel';
 import CategoryCard from '@/components/CategoryCard';
@@ -150,7 +150,7 @@ export default function Home() {
                   'Discover our best-selling products trusted by businesses worldwide'}
               </p>
             </div>
-            <Link href="/products">
+            <Link to="/products">
               <Button
                 variant="outline"
                 className="hidden sm:flex"
@@ -199,7 +199,7 @@ export default function Home() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            <Link href="/products">
+            <Link to="/products">
               <Button data-testid="button-view-all-products-mobile">
                 View All Products
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -287,12 +287,12 @@ export default function Home() {
                 ))}
               </ul>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/contact">
+                <Link to="/contact">
                   <Button size="lg" data-testid="button-cta-contact">
                     Get in Touch
                   </Button>
                 </Link>
-                <Link href="/reviews">
+                <Link to="/reviews">
                   <Button
                     size="lg"
                     variant="outline"

@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -259,7 +259,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 ))}
-                <Link href="/admin/contacts">
+                <Link to="/admin/contacts">
                   <Button variant="outline" className="w-full mt-2">
                     View All Contacts
                     <ArrowRight className="h-4 w-4 ml-2" />
@@ -332,7 +332,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 ))}
-                <Link href="/admin/reviews">
+                <Link to="/admin/reviews">
                   <Button variant="outline" className="w-full mt-2">
                     View All Reviews
                     <ArrowRight className="h-4 w-4 ml-2" />
@@ -356,25 +356,25 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Link href="/admin/products">
+            <Link to="/admin/products">
               <Button variant="outline" className="w-full h-auto py-4 flex-col">
                 <Package className="h-6 w-6 mb-2" />
                 <span>Add Product</span>
               </Button>
             </Link>
-            <Link href="/admin/categories">
+            <Link to="/admin/categories">
               <Button variant="outline" className="w-full h-auto py-4 flex-col">
                 <FolderOpen className="h-6 w-6 mb-2" />
                 <span>Add Category</span>
               </Button>
             </Link>
-            <Link href="/admin/clients">
+            <Link to="/admin/clients">
               <Button variant="outline" className="w-full h-auto py-4 flex-col">
                 <Users className="h-6 w-6 mb-2" />
                 <span>Add Client</span>
               </Button>
             </Link>
-            <Link href="/admin/content">
+            <Link to="/admin/content">
               <Button variant="outline" className="w-full h-auto py-4 flex-col">
                 <TrendingUp className="h-6 w-6 mb-2" />
                 <span>Edit Content</span>

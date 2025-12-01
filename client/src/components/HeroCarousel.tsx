@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import { useSiteContent, type HeroSlide } from '@/hooks/useContent';
 
 // Default images for slides without custom images
@@ -132,7 +132,7 @@ export default function HeroCarousel() {
               'Delivering quality agricultural equipment and commodities to the world'}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/products">
+            <Link to="/products">
               <Button
                 size="lg"
                 className="text-base px-8"
@@ -141,7 +141,7 @@ export default function HeroCarousel() {
                 View Products
               </Button>
             </Link>
-            <Link href="/contact">
+            <Link to="/contact">
               <Button
                 size="lg"
                 variant="outline"

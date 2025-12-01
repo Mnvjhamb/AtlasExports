@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'wouter';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from './ThemeToggle';
@@ -15,7 +15,7 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const [location] = useLocation();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: content } = useSiteContent();
 
@@ -26,7 +26,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link
-            href="/"
+            to="/"
             className="flex items-center gap-2"
             data-testid="link-home-logo"
           >
@@ -58,14 +58,14 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
+              <Link key={link.href} to={link.href}>
                 <Button
-                  variant={location === link.href ? 'secondary' : 'ghost'}
+                  variant={location.pathname === link.href ? 'secondary' : 'ghost'}
                   className="text-sm relative"
                   data-testid={`link-nav-${link.label.toLowerCase().replace(' ', '-')}`}
                 >
                   {link.label}
-                  {location === link.href && (
+                  {location.pathname === link.href && (
                     <motion.div
                       className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
                       layoutId="navbar-indicator"
@@ -79,7 +79,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link href="/admin" className="hidden md:block">
+            <Link to="/admin" className="hidden md:block">
               <Button variant="outline" size="sm" data-testid="link-admin-portal">
                 Admin
               </Button>
@@ -136,9 +136,9 @@ export default function Navbar() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Link href={link.href}>
+                  <Link to={link.href}>
                     <Button
-                      variant={location === link.href ? 'secondary' : 'ghost'}
+                      variant={location.pathname === link.href ? 'secondary' : 'ghost'}
                       className="w-full justify-start"
                       onClick={() => setMobileMenuOpen(false)}
                       data-testid={`link-mobile-${link.label.toLowerCase().replace(' ', '-')}`}
@@ -153,7 +153,7 @@ export default function Navbar() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: navLinks.length * 0.05 }}
               >
-                <Link href="/admin">
+                <Link to="/admin">
                   <Button
                     variant="outline"
                     className="w-full mt-2"

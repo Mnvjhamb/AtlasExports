@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation } from 'react-router-dom';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -36,8 +36,8 @@ function ProductSkeleton() {
 }
 
 export default function Products() {
-  const [location] = useLocation();
-  const searchParams = new URLSearchParams(location.split('?')[1] || '');
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
   const initialCategory = searchParams.get('category') || 'all';
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import { Globe, Lock, Mail, AlertCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +33,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function AdminLogin() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -57,7 +57,7 @@ export default function AdminLogin() {
         title: 'Welcome back!',
         description: "You've successfully logged in.",
       });
-      setLocation('/admin/dashboard');
+      navigate('/admin/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
       let errorMessage = 'Invalid email or password.';

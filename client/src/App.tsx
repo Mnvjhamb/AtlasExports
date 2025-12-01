@@ -1,34 +1,46 @@
-import { Switch, Route, useLocation } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
+import { queryClient } from './lib/queryClient';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { AnimatePresence, motion } from 'framer-motion';
 
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
-import Home from "@/pages/Home";
-import Products from "@/pages/Products";
-import ProductDetail from "@/pages/ProductDetail";
-import About from "@/pages/About";
-import Reviews from "@/pages/Reviews";
-import Contact from "@/pages/Contact";
-import NotFound from "@/pages/not-found";
+import Home from '@/pages/Home';
+import Products from '@/pages/Products';
+import ProductDetail from '@/pages/ProductDetail';
+import About from '@/pages/About';
+import Reviews from '@/pages/Reviews';
+import Contact from '@/pages/Contact';
+import NotFound from '@/pages/not-found';
 
-import AdminLogin from "@/pages/admin/AdminLogin";
-import AdminLayout from "@/pages/admin/AdminLayout";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminProducts from "@/pages/admin/AdminProducts";
-import AdminCategories from "@/pages/admin/AdminCategories";
-import AdminReviews from "@/pages/admin/AdminReviews";
-import AdminContacts from "@/pages/admin/AdminContacts";
-import AdminContent from "@/pages/admin/AdminContent";
-import AdminClients from "@/pages/admin/AdminClients";
+import AdminLogin from '@/pages/admin/AdminLogin';
+import AdminLayout from '@/pages/admin/AdminLayout';
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import AdminProducts from '@/pages/admin/AdminProducts';
+import AdminCategories from '@/pages/admin/AdminCategories';
+import AdminReviews from '@/pages/admin/AdminReviews';
+import AdminContacts from '@/pages/admin/AdminContacts';
+import AdminContent from '@/pages/admin/AdminContent';
+import AdminClients from '@/pages/admin/AdminClients';
 
-function PublicLayout({ children }: { children: React.ReactNode }) {
+// Check if we're on an admin subdomain (admin.theatlasexports.com, dev.admin.theatlasexports.com, etc.)
+const isAdminHost = (() => {
+  const host = window.location.hostname;
+  return host.includes('admin.');
+})();
+
+function PublicLayoutWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -51,63 +63,55 @@ function PageTransition({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PublicRouter() {
-  const [location] = useLocation();
-  
-  return (
-    <PublicLayout>
-      <AnimatePresence mode="wait">
-        <Switch key={location}>
-          <Route path="/">
-            <PageTransition><Home /></PageTransition>
-          </Route>
-          <Route path="/products">
-            <PageTransition><Products /></PageTransition>
-          </Route>
-          <Route path="/products/:id">
-            <PageTransition><ProductDetail /></PageTransition>
-          </Route>
-          <Route path="/about">
-            <PageTransition><About /></PageTransition>
-          </Route>
-          <Route path="/reviews">
-            <PageTransition><Reviews /></PageTransition>
-          </Route>
-          <Route path="/contact">
-            <PageTransition><Contact /></PageTransition>
-          </Route>
-          <Route>
-            <PageTransition><NotFound /></PageTransition>
-          </Route>
-        </Switch>
-      </AnimatePresence>
-    </PublicLayout>
-  );
-}
-
-function AdminRouter() {
+function AdminRoutes() {
   const { signOut } = useAuth();
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await signOut();
-    setLocation("/admin");
+    navigate(isAdminHost ? '/' : '/admin');
   };
 
   return (
     <AdminLayout onLogout={handleLogout}>
-      <Switch>
-        <Route path="/admin/dashboard" component={AdminDashboard} />
-        <Route path="/admin/products" component={AdminProducts} />
-        <Route path="/admin/categories" component={AdminCategories} />
-        <Route path="/admin/reviews" component={AdminReviews} />
-        <Route path="/admin/contacts" component={AdminContacts} />
-        <Route path="/admin/clients" component={AdminClients} />
-        <Route path="/admin/content" component={AdminContent} />
-        <Route>
-          <AdminDashboard />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route
+          path="/"
+          element={<AdminDashboard />}
+        />
+        <Route
+          path="/dashboard"
+          element={<AdminDashboard />}
+        />
+        <Route
+          path="/products"
+          element={<AdminProducts />}
+        />
+        <Route
+          path="/categories"
+          element={<AdminCategories />}
+        />
+        <Route
+          path="/reviews"
+          element={<AdminReviews />}
+        />
+        <Route
+          path="/contacts"
+          element={<AdminContacts />}
+        />
+        <Route
+          path="/clients"
+          element={<AdminClients />}
+        />
+        <Route
+          path="/content"
+          element={<AdminContent />}
+        />
+        <Route
+          path="*"
+          element={<AdminDashboard />}
+        />
+      </Routes>
     </AdminLayout>
   );
 }
@@ -120,11 +124,30 @@ function LoadingSpinner() {
   );
 }
 
-function AppContent() {
-  const [location] = useLocation();
+function ProtectedAdminRoute() {
   const { isAdmin, loading } = useAuth();
 
-  const isAdminRoute = location.startsWith("/admin");
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  return isAdmin ? <AdminRoutes /> : <AdminLogin />;
+}
+
+function PublicPage({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+
+  return (
+    <PublicLayoutWrapper>
+      <AnimatePresence mode="wait">
+        <PageTransition key={location.pathname}>{children}</PageTransition>
+      </AnimatePresence>
+    </PublicLayoutWrapper>
+  );
+}
+
+function AppRoutes() {
+  const { loading } = useAuth();
 
   if (loading) {
     return <LoadingSpinner />;
@@ -133,30 +156,104 @@ function AppContent() {
   return (
     <>
       <Toaster />
-      {isAdminRoute ? (
-        isAdmin ? (
-          <AdminRouter />
-        ) : (
-          <AdminLogin />
-        )
-      ) : (
-        <PublicRouter />
-      )}
+      <Routes>
+        {/* Root path behaves differently based on host */}
+        <Route
+          path="/"
+          element={
+            isAdminHost ? (
+              <ProtectedAdminRoute />
+            ) : (
+              <PublicPage>
+                <Home />
+              </PublicPage>
+            )
+          }
+        />
+
+        {/* Admin routes - available on both hosts */}
+        <Route
+          path="/admin/*"
+          element={<ProtectedAdminRoute />}
+        />
+
+        {/* Public routes - only show if not on admin host */}
+        {!isAdminHost && (
+          <>
+            <Route
+              path="/products"
+              element={
+                <PublicPage>
+                  <Products />
+                </PublicPage>
+              }
+            />
+            <Route
+              path="/products/:id"
+              element={
+                <PublicPage>
+                  <ProductDetail />
+                </PublicPage>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <PublicPage>
+                  <About />
+                </PublicPage>
+              }
+            />
+            <Route
+              path="/reviews"
+              element={
+                <PublicPage>
+                  <Reviews />
+                </PublicPage>
+              }
+            />
+            <Route
+              path="/contact"
+              element={
+                <PublicPage>
+                  <Contact />
+                </PublicPage>
+              }
+            />
+          </>
+        )}
+
+        {/* Catch-all route */}
+        <Route
+          path="*"
+          element={
+            isAdminHost ? (
+              <ProtectedAdminRoute />
+            ) : (
+              <PublicPage>
+                <NotFound />
+              </PublicPage>
+            )
+          }
+        />
+      </Routes>
     </>
   );
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TooltipProvider>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <TooltipProvider>
+            <AuthProvider>
+              <AppRoutes />
+            </AuthProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 }
 

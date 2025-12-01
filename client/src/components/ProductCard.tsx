@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,7 +50,7 @@ export default function ProductCard({
             {description}
           </p>
           <div className="flex gap-2">
-            <Link href={`/products/${id}`} className="flex-1">
+            <Link to={`/products/${id}`} className="flex-1">
               <Button variant="outline" className="w-full" data-testid={`button-view-${id}`}>
                 View Details
               </Button>
