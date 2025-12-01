@@ -16,6 +16,7 @@ export interface HeroSlide {
 export interface CompanyInfo {
   name: string;
   tagline: string;
+  description: string;
   phone: string;
   phone2?: string;
   email: string;
@@ -27,6 +28,8 @@ export interface CompanyInfo {
   postalCode: string;
   businessHours: string;
   businessDays: string;
+  foundedYear: string;
+  countriesServed: string;
 }
 
 export interface SocialLinks {
@@ -37,28 +40,71 @@ export interface SocialLinks {
   twitter?: string;
 }
 
+// Home page sections
+export interface HomeSections {
+  categoriesTitle: string;
+  categoriesSubtitle: string;
+  featuredProductsTitle: string;
+  featuredProductsSubtitle: string;
+  clientsTitle: string;
+  clientsSubtitle: string;
+  ctaTitle: string;
+  ctaDescription: string;
+  ctaFeatures: string[];
+  ctaBadgeNumber: string;
+  ctaBadgeText: string;
+}
+
+// About page content
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  initials: string;
+}
+
+export interface WhyChooseUsItem {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+}
+
 export interface AboutContent {
   heroTitle: string;
   heroSubtitle: string;
   description: string;
   mission: string;
   vision: string;
-  whyChooseUs: string;
-  foundedYear: string;
-  countriesServed: string;
+  whyChooseUsTitle: string;
+  whyChooseUsSubtitle: string;
+  whyChooseUsItems: WhyChooseUsItem[];
+  teamTitle: string;
+  teamSubtitle: string;
+  teamMembers: TeamMember[];
+  ctaTitle: string;
+  ctaSubtitle: string;
 }
 
 export interface ContactContent {
   title: string;
   subtitle: string;
+  urgentTitle: string;
   urgentText: string;
+}
+
+export interface FooterContent {
+  description: string;
+  copyrightText: string;
 }
 
 export interface SiteContent {
   companyInfo: CompanyInfo;
   socialLinks: SocialLinks;
+  home: HomeSections;
   about: AboutContent;
   contact: ContactContent;
+  footer: FooterContent;
   heroSlides: HeroSlide[];
   updatedAt?: Timestamp;
 }
@@ -68,6 +114,8 @@ export const defaultContent: SiteContent = {
   companyInfo: {
     name: 'The Atlas Exports',
     tagline: 'Your Trusted Partner in Global Trade',
+    description:
+      'Your trusted partner for premium agricultural equipment and commodities. Exporting quality products from Punjab to the world.',
     phone: '+91 98765 43210',
     phone2: '+91 98765 43211',
     email: 'info@theatlasexports.com',
@@ -79,6 +127,8 @@ export const defaultContent: SiteContent = {
     postalCode: '141003',
     businessHours: '9:00 AM - 6:00 PM IST',
     businessDays: 'Monday - Saturday',
+    foundedYear: '2010',
+    countriesServed: '25+',
   },
   socialLinks: {
     whatsapp: 'https://wa.me/919876543210',
@@ -87,6 +137,28 @@ export const defaultContent: SiteContent = {
     facebook: '',
     twitter: '',
   },
+  home: {
+    categoriesTitle: 'Our Product Categories',
+    categoriesSubtitle:
+      'Explore our diverse range of quality products, from agricultural machinery to premium commodities, furniture, and building materials.',
+    featuredProductsTitle: 'Featured Products',
+    featuredProductsSubtitle:
+      'Discover our best-selling products trusted by businesses worldwide',
+    clientsTitle: 'Our Trusted Clients',
+    clientsSubtitle:
+      "We're proud to partner with leading businesses across the globe. Here are some of the companies that trust The Atlas Exports.",
+    ctaTitle: "Partner with Punjab's Trusted Export Company",
+    ctaDescription:
+      'With over 14 years of experience in international trade, The Atlas Exports has built a reputation for quality, reliability, and exceptional customer service. We handle everything from sourcing to shipping, making your import process seamless.',
+    ctaFeatures: [
+      'Quality-assured products with certifications',
+      'Competitive pricing with flexible payment terms',
+      'End-to-end logistics support',
+      'Dedicated account manager for each client',
+    ],
+    ctaBadgeNumber: '14+',
+    ctaBadgeText: 'Years of Excellence',
+  },
   about: {
     heroTitle: 'About The Atlas Exports',
     heroSubtitle: 'Your Trusted Partner in Global Trade Since 2010',
@@ -94,20 +166,80 @@ export const defaultContent: SiteContent = {
 
 Our headquarters in Ludhiana, the industrial hub of Punjab, gives us direct access to quality manufacturing facilities and agricultural produce. We work closely with farmers, manufacturers, and artisans to source the finest products that meet international quality standards.`,
     mission:
-      'To bridge global markets with Punjab\'s finest products, delivering exceptional quality and value while fostering sustainable business relationships that benefit all stakeholders.',
+      "To bridge global markets with Punjab's finest products, delivering exceptional quality and value while fostering sustainable business relationships that benefit all stakeholders.",
     vision:
       'To become the most trusted name in agricultural and industrial exports from India, setting benchmarks for quality, reliability, and customer satisfaction in the international trade community.',
-    whyChooseUs:
-      'With over 14 years of experience in international trade, we offer quality-assured products, competitive pricing, end-to-end logistics support, and dedicated account managers for each client.',
-    foundedYear: '2010',
-    countriesServed: '25+',
+    whyChooseUsTitle: 'Why Choose Us',
+    whyChooseUsSubtitle:
+      'We go above and beyond to ensure your satisfaction with every order',
+    whyChooseUsItems: [
+      {
+        id: '1',
+        icon: 'Award',
+        title: 'Quality Assurance',
+        description:
+          'Every product undergoes rigorous quality checks before export. We hold ISO certifications and follow international standards.',
+      },
+      {
+        id: '2',
+        icon: 'Users',
+        title: 'Dedicated Support',
+        description:
+          'Each client gets a dedicated account manager who understands your business needs and ensures smooth transactions.',
+      },
+      {
+        id: '3',
+        icon: 'CheckCircle',
+        title: 'End-to-End Service',
+        description:
+          'From sourcing to shipping, documentation to delivery - we handle the complete export process for you.',
+      },
+      {
+        id: '4',
+        icon: 'Target',
+        title: 'Competitive Pricing',
+        description:
+          'Direct manufacturer relationships and efficient operations allow us to offer the best prices without compromising quality.',
+      },
+    ],
+    teamTitle: 'Our Leadership',
+    teamSubtitle: 'Meet the team driving our vision forward',
+    teamMembers: [
+      {
+        id: '1',
+        name: 'Rajinder Singh',
+        role: 'Founder & CEO',
+        initials: 'RS',
+      },
+      {
+        id: '2',
+        name: 'Harpreet Kaur',
+        role: 'Co-Founder & COO',
+        initials: 'HK',
+      },
+      {
+        id: '3',
+        name: 'Amarjit Singh',
+        role: 'Director, Operations',
+        initials: 'AS',
+      },
+    ],
+    ctaTitle: 'Ready to Partner with Us?',
+    ctaSubtitle:
+      'Join hundreds of satisfied clients worldwide who trust us for their sourcing needs.',
   },
   contact: {
     title: 'Contact Us',
     subtitle:
       "Ready to discuss your export needs? Get in touch with our team and we'll respond within 24 hours.",
+    urgentTitle: 'Need Urgent Assistance?',
     urgentText:
       'For time-sensitive inquiries, call our direct line or message us on WhatsApp.',
+  },
+  footer: {
+    description:
+      'Your trusted partner for premium agricultural equipment and commodities. Exporting quality products from Punjab to the world.',
+    copyrightText: 'All rights reserved.',
   },
   heroSlides: [
     {
@@ -155,17 +287,28 @@ export function useSiteContent() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const data = docSnap.data() as SiteContent;
+          const data = docSnap.data() as Partial<SiteContent>;
           // Merge with defaults to ensure all fields exist
           return {
             ...defaultContent,
             ...data,
             companyInfo: { ...defaultContent.companyInfo, ...data.companyInfo },
             socialLinks: { ...defaultContent.socialLinks, ...data.socialLinks },
-            about: { ...defaultContent.about, ...data.about },
+            home: { ...defaultContent.home, ...data.home },
+            about: {
+              ...defaultContent.about,
+              ...data.about,
+              whyChooseUsItems: data.about?.whyChooseUsItems?.length
+                ? data.about.whyChooseUsItems
+                : defaultContent.about.whyChooseUsItems,
+              teamMembers: data.about?.teamMembers?.length
+                ? data.about.teamMembers
+                : defaultContent.about.teamMembers,
+            },
             contact: { ...defaultContent.contact, ...data.contact },
+            footer: { ...defaultContent.footer, ...data.footer },
             heroSlides:
-              data.heroSlides?.length > 0
+              data.heroSlides && data.heroSlides.length > 0
                 ? data.heroSlides
                 : defaultContent.heroSlides,
           };
@@ -215,9 +358,9 @@ export function useUpdateCompanyInfo() {
 
   return useMutation({
     mutationFn: async (companyInfo: Partial<CompanyInfo>) => {
-      const queryClient = updateContent.mutateAsync;
-      // This will be handled by the parent hook
-      return updateContent.mutateAsync({ companyInfo: companyInfo as CompanyInfo });
+      return updateContent.mutateAsync({
+        companyInfo: companyInfo as CompanyInfo,
+      });
     },
   });
 }
@@ -231,4 +374,3 @@ export function useUpdateHeroSlides() {
     },
   });
 }
-

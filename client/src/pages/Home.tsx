@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight } from 'lucide-react';
 import { useCategories, useFeaturedProducts } from '@/hooks/useProducts';
 import { useClients } from '@/hooks/useClients';
+import { useSiteContent } from '@/hooks/useContent';
 
 // Fallback images for when products don't have images
 import equipmentImg from '@assets/generated_images/hydraulic_disc_harrow_product.png';
@@ -50,6 +51,9 @@ function ProductSkeleton() {
 }
 
 export default function Home() {
+  const { data: content } = useSiteContent();
+  const home = content?.home;
+
   const {
     data: categories,
     isLoading: categoriesLoading,
@@ -85,11 +89,12 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl font-bold mb-4">Our Product Categories</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              {home?.categoriesTitle || 'Our Product Categories'}
+            </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Explore our diverse range of quality products, from agricultural
-              machinery to premium commodities, furniture, and building
-              materials.
+              {home?.categoriesSubtitle ||
+                'Explore our diverse range of quality products, from agricultural machinery to premium commodities, furniture, and building materials.'}
             </p>
           </motion.div>
 
@@ -137,10 +142,12 @@ export default function Home() {
             transition={{ duration: 0.5 }}
           >
             <div>
-              <h2 className="text-3xl font-bold mb-2">Featured Products</h2>
+              <h2 className="text-3xl font-bold mb-2">
+                {home?.featuredProductsTitle || 'Featured Products'}
+              </h2>
               <p className="text-muted-foreground">
-                Discover our best-selling products trusted by businesses
-                worldwide
+                {home?.featuredProductsSubtitle ||
+                  'Discover our best-selling products trusted by businesses worldwide'}
               </p>
             </div>
             <Link href="/products">
@@ -212,10 +219,12 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl font-bold mb-4">Our Trusted Clients</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              {home?.clientsTitle || 'Our Trusted Clients'}
+            </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              We're proud to partner with leading businesses across the globe.
-              Here are some of the companies that trust The Atlas Exports.
+              {home?.clientsSubtitle ||
+                "We're proud to partner with leading businesses across the globe. Here are some of the companies that trust The Atlas Exports."}
             </p>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -249,21 +258,21 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-3xl font-bold mb-4">
-                Partner with Punjab's Trusted Export Company
+                {home?.ctaTitle || "Partner with Punjab's Trusted Export Company"}
               </h2>
               <p className="text-muted-foreground mb-6">
-                With over 14 years of experience in international trade, The
-                Atlas Exports has built a reputation for quality, reliability,
-                and exceptional customer service. We handle everything from
-                sourcing to shipping, making your import process seamless.
+                {home?.ctaDescription ||
+                  'With over 14 years of experience in international trade, The Atlas Exports has built a reputation for quality, reliability, and exceptional customer service. We handle everything from sourcing to shipping, making your import process seamless.'}
               </p>
               <ul className="space-y-3 mb-8">
-                {[
-                  'Quality-assured products with certifications',
-                  'Competitive pricing with flexible payment terms',
-                  'End-to-end logistics support',
-                  'Dedicated account manager for each client',
-                ].map((item, index) => (
+                {(
+                  home?.ctaFeatures || [
+                    'Quality-assured products with certifications',
+                    'Competitive pricing with flexible payment terms',
+                    'End-to-end logistics support',
+                    'Dedicated account manager for each client',
+                  ]
+                ).map((item, index) => (
                   <motion.li
                     key={index}
                     className="flex items-center gap-2"
@@ -313,8 +322,12 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
-                <div className="text-4xl font-bold">14+</div>
-                <div className="text-sm opacity-90">Years of Excellence</div>
+                <div className="text-4xl font-bold">
+                  {home?.ctaBadgeNumber || '14+'}
+                </div>
+                <div className="text-sm opacity-90">
+                  {home?.ctaBadgeText || 'Years of Excellence'}
+                </div>
               </motion.div>
             </motion.div>
           </div>

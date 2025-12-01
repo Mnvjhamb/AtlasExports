@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -12,6 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import {
   Save,
@@ -26,15 +33,44 @@ import {
   GripVertical,
   Plus,
   Trash2,
+  Home,
+  Users,
+  RotateCcw,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import {
   useSiteContent,
   useUpdateSiteContent,
   defaultContent,
   type SiteContent,
   type HeroSlide,
+  type TeamMember,
+  type WhyChooseUsItem,
 } from '@/hooks/useContent';
 import { uploadImage, isValidImageFile, isValidFileSize } from '@/lib/storage';
+
+const iconOptions = [
+  'Award',
+  'Users',
+  'CheckCircle',
+  'Target',
+  'Shield',
+  'Truck',
+  'HeartHandshake',
+  'Globe',
+  'Zap',
+  'ThumbsUp',
+];
 
 export default function AdminContent() {
   const { data: siteContent, isLoading, error } = useSiteContent();
@@ -44,7 +80,6 @@ export default function AdminContent() {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [hasChanges, setHasChanges] = useState(false);
   const [uploadingSlide, setUploadingSlide] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load content from database
   useEffect(() => {
@@ -57,7 +92,7 @@ export default function AdminContent() {
   const handleChange = (
     section: keyof SiteContent,
     field: string,
-    value: string
+    value: any
   ) => {
     setContent((prev) => ({
       ...prev,
@@ -79,6 +114,22 @@ export default function AdminContent() {
       toast({
         title: 'Error',
         description: 'Failed to save content',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRevertToDefault = async () => {
+    try {
+      await updateContent.mutateAsync(defaultContent);
+      setContent(defaultContent);
+      toast({ title: 'Content reverted to defaults' });
+      setHasChanges(false);
+    } catch (error) {
+      console.error('Error reverting content:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to revert content',
         variant: 'destructive',
       });
     }
@@ -163,6 +214,115 @@ export default function AdminContent() {
     }
   };
 
+  // Team member management
+  const handleAddTeamMember = () => {
+    const newMember: TeamMember = {
+      id: Date.now().toString(),
+      name: 'New Member',
+      role: 'Role',
+      initials: 'NM',
+    };
+    setContent((prev) => ({
+      ...prev,
+      about: {
+        ...prev.about,
+        teamMembers: [...prev.about.teamMembers, newMember],
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  const handleRemoveTeamMember = (id: string) => {
+    setContent((prev) => ({
+      ...prev,
+      about: {
+        ...prev.about,
+        teamMembers: prev.about.teamMembers.filter((m) => m.id !== id),
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  const handleTeamMemberChange = (
+    id: string,
+    field: keyof TeamMember,
+    value: string
+  ) => {
+    setContent((prev) => ({
+      ...prev,
+      about: {
+        ...prev.about,
+        teamMembers: prev.about.teamMembers.map((m) =>
+          m.id === id ? { ...m, [field]: value } : m
+        ),
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  // Why Choose Us items management
+  const handleAddWhyChooseUs = () => {
+    const newItem: WhyChooseUsItem = {
+      id: Date.now().toString(),
+      icon: 'Award',
+      title: 'New Feature',
+      description: 'Description here',
+    };
+    setContent((prev) => ({
+      ...prev,
+      about: {
+        ...prev.about,
+        whyChooseUsItems: [...prev.about.whyChooseUsItems, newItem],
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  const handleRemoveWhyChooseUs = (id: string) => {
+    setContent((prev) => ({
+      ...prev,
+      about: {
+        ...prev.about,
+        whyChooseUsItems: prev.about.whyChooseUsItems.filter((i) => i.id !== id),
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  const handleWhyChooseUsChange = (
+    id: string,
+    field: keyof WhyChooseUsItem,
+    value: string
+  ) => {
+    setContent((prev) => ({
+      ...prev,
+      about: {
+        ...prev.about,
+        whyChooseUsItems: prev.about.whyChooseUsItems.map((i) =>
+          i.id === id ? { ...i, [field]: value } : i
+        ),
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  // CTA Features management
+  const handleCtaFeatureChange = (index: number, value: string) => {
+    const newFeatures = [...(content.home.ctaFeatures || [])];
+    newFeatures[index] = value;
+    handleChange('home', 'ctaFeatures', newFeatures);
+  };
+
+  const handleAddCtaFeature = () => {
+    const newFeatures = [...(content.home.ctaFeatures || []), 'New feature'];
+    handleChange('home', 'ctaFeatures', newFeatures);
+  };
+
+  const handleRemoveCtaFeature = (index: number) => {
+    const newFeatures = content.home.ctaFeatures.filter((_, i) => i !== index);
+    handleChange('home', 'ctaFeatures', newFeatures);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -189,25 +349,62 @@ export default function AdminContent() {
             Edit website content sections and settings
           </p>
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={updateContent.isPending || !hasChanges}
-          data-testid="button-save-content"
-        >
-          {updateContent.isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          {updateContent.isPending ? 'Saving...' : 'Save All Changes'}
-        </Button>
+        <div className="flex gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                disabled={updateContent.isPending}
+                data-testid="button-revert-content"
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Revert to Default
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Revert to Default Content?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will reset ALL content across all pages (Home, About,
+                  Contact, Footer, etc.) to the original default values. This
+                  action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleRevertToDefault}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Yes, Revert Everything
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button
+            onClick={handleSave}
+            disabled={updateContent.isPending || !hasChanges}
+            data-testid="button-save-content"
+          >
+            {updateContent.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            {updateContent.isPending ? 'Saving...' : 'Save All Changes'}
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="company" className="space-y-6">
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="company" className="gap-2">
             <Building2 className="h-4 w-4" />
-            Company Info
+            Company
+          </TabsTrigger>
+          <TabsTrigger value="home" className="gap-2">
+            <Home className="h-4 w-4" />
+            Home Page
           </TabsTrigger>
           <TabsTrigger value="hero" className="gap-2">
             <ImageIcon className="h-4 w-4" />
@@ -217,13 +414,17 @@ export default function AdminContent() {
             <FileText className="h-4 w-4" />
             About Page
           </TabsTrigger>
+          <TabsTrigger value="team" className="gap-2">
+            <Users className="h-4 w-4" />
+            Team
+          </TabsTrigger>
           <TabsTrigger value="contact" className="gap-2">
             <Phone className="h-4 w-4" />
-            Contact Page
+            Contact
           </TabsTrigger>
           <TabsTrigger value="social" className="gap-2">
             <Globe className="h-4 w-4" />
-            Social Links
+            Social & Footer
           </TabsTrigger>
         </TabsList>
 
@@ -253,6 +454,48 @@ export default function AdminContent() {
                     }
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Textarea
+                    value={content.companyInfo.description}
+                    onChange={(e) =>
+                      handleChange('companyInfo', 'description', e.target.value)
+                    }
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Founded Year</Label>
+                    <Input
+                      value={content.companyInfo.foundedYear}
+                      onChange={(e) =>
+                        handleChange('companyInfo', 'foundedYear', e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Countries Served</Label>
+                    <Input
+                      value={content.companyInfo.countriesServed}
+                      onChange={(e) =>
+                        handleChange(
+                          'companyInfo',
+                          'countriesServed',
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Phone</Label>
@@ -293,14 +536,6 @@ export default function AdminContent() {
                     />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Address & Hours</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Address</Label>
                   <Input
@@ -358,7 +593,6 @@ export default function AdminContent() {
                       onChange={(e) =>
                         handleChange('companyInfo', 'businessDays', e.target.value)
                       }
-                      placeholder="Monday - Saturday"
                     />
                   </div>
                   <div className="space-y-2">
@@ -366,9 +600,183 @@ export default function AdminContent() {
                     <Input
                       value={content.companyInfo.businessHours}
                       onChange={(e) =>
-                        handleChange('companyInfo', 'businessHours', e.target.value)
+                        handleChange(
+                          'companyInfo',
+                          'businessHours',
+                          e.target.value
+                        )
                       }
-                      placeholder="9:00 AM - 6:00 PM IST"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Home Page Tab */}
+        <TabsContent value="home">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Categories Section</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input
+                    value={content.home.categoriesTitle}
+                    onChange={(e) =>
+                      handleChange('home', 'categoriesTitle', e.target.value)
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Subtitle</Label>
+                  <Textarea
+                    value={content.home.categoriesSubtitle}
+                    onChange={(e) =>
+                      handleChange('home', 'categoriesSubtitle', e.target.value)
+                    }
+                    rows={2}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Featured Products Section</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input
+                    value={content.home.featuredProductsTitle}
+                    onChange={(e) =>
+                      handleChange('home', 'featuredProductsTitle', e.target.value)
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Subtitle</Label>
+                  <Textarea
+                    value={content.home.featuredProductsSubtitle}
+                    onChange={(e) =>
+                      handleChange(
+                        'home',
+                        'featuredProductsSubtitle',
+                        e.target.value
+                      )
+                    }
+                    rows={2}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Clients Section</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input
+                    value={content.home.clientsTitle}
+                    onChange={(e) =>
+                      handleChange('home', 'clientsTitle', e.target.value)
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Subtitle</Label>
+                  <Textarea
+                    value={content.home.clientsSubtitle}
+                    onChange={(e) =>
+                      handleChange('home', 'clientsSubtitle', e.target.value)
+                    }
+                    rows={2}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Call to Action Section</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input
+                    value={content.home.ctaTitle}
+                    onChange={(e) =>
+                      handleChange('home', 'ctaTitle', e.target.value)
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Textarea
+                    value={content.home.ctaDescription}
+                    onChange={(e) =>
+                      handleChange('home', 'ctaDescription', e.target.value)
+                    }
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Features List</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddCtaFeature}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {content.home.ctaFeatures?.map((feature, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          value={feature}
+                          onChange={(e) =>
+                            handleCtaFeatureChange(index, e.target.value)
+                          }
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveCtaFeature(index)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Badge Number</Label>
+                    <Input
+                      value={content.home.ctaBadgeNumber}
+                      onChange={(e) =>
+                        handleChange('home', 'ctaBadgeNumber', e.target.value)
+                      }
+                      placeholder="14+"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Badge Text</Label>
+                    <Input
+                      value={content.home.ctaBadgeText}
+                      onChange={(e) =>
+                        handleChange('home', 'ctaBadgeText', e.target.value)
+                      }
+                      placeholder="Years of Excellence"
                     />
                   </div>
                 </div>
@@ -495,11 +903,11 @@ export default function AdminContent() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>About Page Hero</CardTitle>
+                <CardTitle>Hero Section</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Hero Title</Label>
+                  <Label>Title</Label>
                   <Input
                     value={content.about.heroTitle}
                     onChange={(e) =>
@@ -508,7 +916,7 @@ export default function AdminContent() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Hero Subtitle</Label>
+                  <Label>Subtitle</Label>
                   <Input
                     value={content.about.heroSubtitle}
                     onChange={(e) =>
@@ -530,7 +938,7 @@ export default function AdminContent() {
                     handleChange('about', 'description', e.target.value)
                   }
                   className="min-h-[200px]"
-                  placeholder="Company description..."
+                  placeholder="Company description... Use double line breaks for paragraphs."
                 />
               </CardContent>
             </Card>
@@ -569,47 +977,240 @@ export default function AdminContent() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Why Choose Us</CardTitle>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Why Choose Us</CardTitle>
+                    <CardDescription>
+                      Features displayed on the About page
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={handleAddWhyChooseUs}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Feature
+                  </Button>
+                </div>
               </CardHeader>
-              <CardContent>
-                <Textarea
-                  value={content.about.whyChooseUs}
-                  onChange={(e) =>
-                    handleChange('about', 'whyChooseUs', e.target.value)
-                  }
-                  className="min-h-[100px]"
-                />
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Section Title</Label>
+                    <Input
+                      value={content.about.whyChooseUsTitle}
+                      onChange={(e) =>
+                        handleChange('about', 'whyChooseUsTitle', e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Section Subtitle</Label>
+                    <Input
+                      value={content.about.whyChooseUsSubtitle}
+                      onChange={(e) =>
+                        handleChange(
+                          'about',
+                          'whyChooseUsSubtitle',
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {content.about.whyChooseUsItems?.map((item) => (
+                    <div
+                      key={item.id}
+                      className="border rounded-lg p-4 space-y-3 bg-muted/30"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="grid grid-cols-3 gap-4 flex-1 mr-4">
+                          <div className="space-y-2">
+                            <Label>Icon</Label>
+                            <Select
+                              value={item.icon}
+                              onValueChange={(v) =>
+                                handleWhyChooseUsChange(item.id, 'icon', v)
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {iconOptions.map((icon) => (
+                                  <SelectItem key={icon} value={icon}>
+                                    {icon}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2 col-span-2">
+                            <Label>Title</Label>
+                            <Input
+                              value={item.title}
+                              onChange={(e) =>
+                                handleWhyChooseUsChange(
+                                  item.id,
+                                  'title',
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveWhyChooseUs(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          value={item.description}
+                          onChange={(e) =>
+                            handleWhyChooseUsChange(
+                              item.id,
+                              'description',
+                              e.target.value
+                            )
+                          }
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Statistics</CardTitle>
+                <CardTitle>CTA Section</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Founded Year</Label>
-                    <Input
-                      value={content.about.foundedYear}
-                      onChange={(e) =>
-                        handleChange('about', 'foundedYear', e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Countries Served</Label>
-                    <Input
-                      value={content.about.countriesServed}
-                      onChange={(e) =>
-                        handleChange('about', 'countriesServed', e.target.value)
-                      }
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input
+                    value={content.about.ctaTitle}
+                    onChange={(e) =>
+                      handleChange('about', 'ctaTitle', e.target.value)
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Subtitle</Label>
+                  <Textarea
+                    value={content.about.ctaSubtitle}
+                    onChange={(e) =>
+                      handleChange('about', 'ctaSubtitle', e.target.value)
+                    }
+                    rows={2}
+                  />
                 </div>
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Team Tab */}
+        <TabsContent value="team">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Team Members</CardTitle>
+                  <CardDescription>
+                    Leadership team displayed on the About page
+                  </CardDescription>
+                </div>
+                <Button onClick={handleAddTeamMember} variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Member
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Section Title</Label>
+                  <Input
+                    value={content.about.teamTitle}
+                    onChange={(e) =>
+                      handleChange('about', 'teamTitle', e.target.value)
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Section Subtitle</Label>
+                  <Input
+                    value={content.about.teamSubtitle}
+                    onChange={(e) =>
+                      handleChange('about', 'teamSubtitle', e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {content.about.teamMembers?.map((member) => (
+                  <div
+                    key={member.id}
+                    className="border rounded-lg p-4 space-y-3 bg-muted/30"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">
+                        {member.name || 'New Member'}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveTeamMember(member.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Name</Label>
+                      <Input
+                        value={member.name}
+                        onChange={(e) =>
+                          handleTeamMemberChange(member.id, 'name', e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Role</Label>
+                      <Input
+                        value={member.role}
+                        onChange={(e) =>
+                          handleTeamMemberChange(member.id, 'role', e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Initials (2 letters)</Label>
+                      <Input
+                        value={member.initials}
+                        maxLength={2}
+                        onChange={(e) =>
+                          handleTeamMemberChange(
+                            member.id,
+                            'initials',
+                            e.target.value.toUpperCase()
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Contact Page Tab */}
@@ -639,6 +1240,15 @@ export default function AdminContent() {
                 />
               </div>
               <div className="space-y-2">
+                <Label>Urgent Assistance Title</Label>
+                <Input
+                  value={content.contact.urgentTitle}
+                  onChange={(e) =>
+                    handleChange('contact', 'urgentTitle', e.target.value)
+                  }
+                />
+              </div>
+              <div className="space-y-2">
                 <Label>Urgent Assistance Text</Label>
                 <Textarea
                   value={content.contact.urgentText}
@@ -652,68 +1262,102 @@ export default function AdminContent() {
           </Card>
         </TabsContent>
 
-        {/* Social Links Tab */}
+        {/* Social & Footer Tab */}
         <TabsContent value="social">
-          <Card>
-            <CardHeader>
-              <CardTitle>Social Media Links</CardTitle>
-              <CardDescription>
-                Links displayed in footer and contact sections
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>WhatsApp</Label>
-                <Input
-                  value={content.socialLinks.whatsapp}
-                  onChange={(e) =>
-                    handleChange('socialLinks', 'whatsapp', e.target.value)
-                  }
-                  placeholder="https://wa.me/..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>LinkedIn</Label>
-                <Input
-                  value={content.socialLinks.linkedin}
-                  onChange={(e) =>
-                    handleChange('socialLinks', 'linkedin', e.target.value)
-                  }
-                  placeholder="https://linkedin.com/..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Instagram</Label>
-                <Input
-                  value={content.socialLinks.instagram}
-                  onChange={(e) =>
-                    handleChange('socialLinks', 'instagram', e.target.value)
-                  }
-                  placeholder="https://instagram.com/..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Facebook</Label>
-                <Input
-                  value={content.socialLinks.facebook || ''}
-                  onChange={(e) =>
-                    handleChange('socialLinks', 'facebook', e.target.value)
-                  }
-                  placeholder="https://facebook.com/..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Twitter / X</Label>
-                <Input
-                  value={content.socialLinks.twitter || ''}
-                  onChange={(e) =>
-                    handleChange('socialLinks', 'twitter', e.target.value)
-                  }
-                  placeholder="https://twitter.com/..."
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Social Media Links</CardTitle>
+                <CardDescription>
+                  Links displayed in footer and contact sections
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>WhatsApp</Label>
+                  <Input
+                    value={content.socialLinks.whatsapp}
+                    onChange={(e) =>
+                      handleChange('socialLinks', 'whatsapp', e.target.value)
+                    }
+                    placeholder="https://wa.me/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>LinkedIn</Label>
+                  <Input
+                    value={content.socialLinks.linkedin}
+                    onChange={(e) =>
+                      handleChange('socialLinks', 'linkedin', e.target.value)
+                    }
+                    placeholder="https://linkedin.com/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Instagram</Label>
+                  <Input
+                    value={content.socialLinks.instagram}
+                    onChange={(e) =>
+                      handleChange('socialLinks', 'instagram', e.target.value)
+                    }
+                    placeholder="https://instagram.com/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Facebook</Label>
+                  <Input
+                    value={content.socialLinks.facebook || ''}
+                    onChange={(e) =>
+                      handleChange('socialLinks', 'facebook', e.target.value)
+                    }
+                    placeholder="https://facebook.com/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Twitter / X</Label>
+                  <Input
+                    value={content.socialLinks.twitter || ''}
+                    onChange={(e) =>
+                      handleChange('socialLinks', 'twitter', e.target.value)
+                    }
+                    placeholder="https://twitter.com/..."
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Footer Content</CardTitle>
+                <CardDescription>
+                  Additional footer text and settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Footer Description</Label>
+                  <Textarea
+                    value={content.footer.description}
+                    onChange={(e) =>
+                      handleChange('footer', 'description', e.target.value)
+                    }
+                    rows={3}
+                    placeholder="Short description shown in footer..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Copyright Text</Label>
+                  <Input
+                    value={content.footer.copyrightText}
+                    onChange={(e) =>
+                      handleChange('footer', 'copyrightText', e.target.value)
+                    }
+                    placeholder="All rights reserved."
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
