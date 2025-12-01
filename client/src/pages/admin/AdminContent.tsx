@@ -80,6 +80,7 @@ export default function AdminContent() {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [hasChanges, setHasChanges] = useState(false);
   const [uploadingSlide, setUploadingSlide] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   // Load content from database
   useEffect(() => {
@@ -133,6 +134,48 @@ export default function AdminContent() {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!isValidImageFile(file)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please upload a valid image file (PNG, JPG, GIF, WebP)',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!isValidFileSize(file, 2)) {
+      toast({
+        title: 'File too large',
+        description: 'Logo must be less than 2MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const url = await uploadImage(file, 'branding');
+      handleChange('companyInfo', 'logoUrl', url);
+      toast({ title: 'Logo uploaded successfully' });
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description: 'Failed to upload logo',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    handleChange('companyInfo', 'logoUrl', '');
   };
 
   // Hero slide management
@@ -430,7 +473,81 @@ export default function AdminContent() {
 
         {/* Company Info Tab */}
         <TabsContent value="company">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-6">
+            {/* Logo Upload Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Company Logo</CardTitle>
+                <CardDescription>
+                  Upload your company logo (PNG, JPG, or WebP, max 2MB)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-start gap-6">
+                  <div className="border-2 border-dashed rounded-lg p-4 w-40 h-40 flex items-center justify-center bg-muted/30">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                      id="logo-upload"
+                    />
+                    {content.companyInfo.logoUrl ? (
+                      <div className="relative w-full h-full">
+                        <img
+                          src={content.companyInfo.logoUrl}
+                          alt="Company Logo"
+                          className="w-full h-full object-contain rounded"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveLogo}
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="logo-upload"
+                        className="flex flex-col items-center cursor-pointer text-muted-foreground text-center"
+                      >
+                        {uploadingLogo ? (
+                          <Loader2 className="h-8 w-8 animate-spin" />
+                        ) : (
+                          <>
+                            <Upload className="h-8 w-8 mb-2" />
+                            <span className="text-sm">Upload Logo</span>
+                          </>
+                        )}
+                      </label>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      This logo will be displayed in the navigation bar and footer.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Recommended: Square image (e.g., 200x200px) or horizontal logo with transparent background.
+                    </p>
+                    {content.companyInfo.logoUrl && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          document.getElementById('logo-upload')?.click()
+                        }
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Change Logo
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Basic Information</CardTitle>
@@ -611,6 +728,7 @@ export default function AdminContent() {
                 </div>
               </CardContent>
             </Card>
+            </div>
           </div>
         </TabsContent>
 

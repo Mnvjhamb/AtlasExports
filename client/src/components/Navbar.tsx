@@ -1,36 +1,58 @@
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import { Menu, X, Globe } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import ThemeToggle from "./ThemeToggle";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
+import { Link, useLocation } from 'wouter';
+import { Menu, X, Globe } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import ThemeToggle from './ThemeToggle';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useSiteContent } from '@/hooks/useContent';
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "Products" },
-  { href: "/about", label: "About" },
-  { href: "/reviews", label: "Reviews" },
-  { href: "/contact", label: "Contact" },
+  { href: '/', label: 'Home' },
+  { href: '/products', label: 'Products' },
+  { href: '/about', label: 'About' },
+  { href: '/reviews', label: 'Reviews' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 export default function Navbar() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: content } = useSiteContent();
+
+  const companyInfo = content?.companyInfo;
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2" data-testid="link-home-logo">
-            <motion.div
-              whileHover={{ rotate: 360 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Globe className="h-8 w-8 text-primary" />
-            </motion.div>
+          <Link
+            href="/"
+            className="flex items-center gap-2"
+            data-testid="link-home-logo"
+          >
+            {companyInfo?.logoUrl ? (
+              <motion.img
+                src={companyInfo.logoUrl}
+                alt={companyInfo?.name || 'Logo'}
+                className="h-10 w-10 object-contain"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              />
+            ) : (
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Globe className="h-8 w-8 text-primary" />
+              </motion.div>
+            )}
             <div className="flex flex-col">
-              <span className="font-bold text-lg leading-tight">The Atlas Exports</span>
-              <span className="text-xs text-muted-foreground">Punjab, India</span>
+              <span className="font-bold text-lg leading-tight">
+                {companyInfo?.name || 'The Atlas Exports'}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {companyInfo?.city || 'Punjab'}, {companyInfo?.country || 'India'}
+              </span>
             </div>
           </Link>
 
@@ -38,16 +60,16 @@ export default function Navbar() {
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href}>
                 <Button
-                  variant={location === link.href ? "secondary" : "ghost"}
+                  variant={location === link.href ? 'secondary' : 'ghost'}
                   className="text-sm relative"
-                  data-testid={`link-nav-${link.label.toLowerCase().replace(" ", "-")}`}
+                  data-testid={`link-nav-${link.label.toLowerCase().replace(' ', '-')}`}
                 >
                   {link.label}
                   {location === link.href && (
                     <motion.div
                       className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
                       layoutId="navbar-indicator"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}
                 </Button>
@@ -102,7 +124,7 @@ export default function Navbar() {
           <motion.div
             className="md:hidden border-t border-border bg-background"
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
+            animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
@@ -116,10 +138,10 @@ export default function Navbar() {
                 >
                   <Link href={link.href}>
                     <Button
-                      variant={location === link.href ? "secondary" : "ghost"}
+                      variant={location === link.href ? 'secondary' : 'ghost'}
                       className="w-full justify-start"
                       onClick={() => setMobileMenuOpen(false)}
-                      data-testid={`link-mobile-${link.label.toLowerCase().replace(" ", "-")}`}
+                      data-testid={`link-mobile-${link.label.toLowerCase().replace(' ', '-')}`}
                     >
                       {link.label}
                     </Button>

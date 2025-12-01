@@ -17,6 +17,7 @@ export interface CompanyInfo {
   name: string;
   tagline: string;
   description: string;
+  logoUrl?: string;
   phone: string;
   phone2?: string;
   email: string;
@@ -116,6 +117,7 @@ export const defaultContent: SiteContent = {
     tagline: 'Your Trusted Partner in Global Trade',
     description:
       'Your trusted partner for premium agricultural equipment and commodities. Exporting quality products from Punjab to the world.',
+    logoUrl: '',
     phone: '+91 98765 43210',
     phone2: '+91 98765 43211',
     email: 'info@theatlasexports.com',
