@@ -23,17 +23,17 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-background/98 backdrop-blur-lg supports-[backdrop-filter]:bg-background/90 border-b border-border/50 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           <Link
             to="/"
-            className="flex items-center gap-2"
+            className="flex items-center gap-3"
             data-testid="link-home-logo"
           >
             {companyInfo?.logoUrl ? (
               <motion.img
                 src={companyInfo.logoUrl}
                 alt={companyInfo?.name || 'Logo'}
-                className="h-10 w-10 object-contain"
+                className="h-16 w-16 object-contain"
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               />
@@ -42,14 +42,14 @@ export default function Navbar() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               >
-                <Globe className="h-8 w-8 text-primary" />
+                <Globe className="h-14 w-14 text-primary" />
               </motion.div>
             )}
             <div className="flex flex-col">
-              <span className="font-bold text-lg leading-tight">
+              <span className="font-bold text-2xl leading-tight">
                 {companyInfo?.name || 'The Atlas Exports'}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 {companyInfo?.city || 'Punjab'},{' '}
                 {companyInfo?.country || 'India'}
               </span>

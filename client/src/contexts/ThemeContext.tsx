@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 
-type Theme = 'light';
+type Theme = 'dark';
 
 interface ThemeContextType {
   theme: Theme;
@@ -10,13 +10,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
-    // Ensure dark mode class is never added
+    // Ensure dark mode class is always added
     const root = document.documentElement;
-    root.classList.remove('dark');
+    root.classList.add('dark');
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme: 'light' }}>
+    <ThemeContext.Provider value={{ theme: 'dark' }}>
       {children}
     </ThemeContext.Provider>
   );
