@@ -58,8 +58,10 @@ export default function TrustIndicators() {
                   type: 'spring',
                   stiffness: 300,
                 }}
-                whileHover={{ scale: 1.2 }}
-                transition={{ duration: 0.3 }}
+                whileHover={{
+                  scale: 1.2,
+                  transition: { duration: 0.3 },
+                }}
               >
                 <item.icon className="h-12 w-12 mx-auto mb-4 opacity-90" />
               </motion.div>
