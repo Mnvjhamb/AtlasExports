@@ -49,7 +49,7 @@ export default function CategoryCard({
               transition={{ duration: 0.3 }}
             />
             <motion.div
-              className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/30 to-transparent"
+              className="absolute inset-0 bg-gradient-to-t from-primary/50 via-primary/20 to-transparent"
               initial={{ opacity: 0.7 }}
               whileHover={{ opacity: 0.9 }}
               transition={{ duration: 0.3 }}

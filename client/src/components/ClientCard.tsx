@@ -32,7 +32,7 @@ export default function ClientCard({
       <Card className="hover-elevate border-border/50 shadow-md hover:shadow-xl transition-all duration-300">
         <CardContent className="p-5 flex items-center gap-4">
           <motion.div
-            whileHover={{ rotate: 360, scale: 1.1 }}
+            whileHover={{ scale: 1.1 }}
             transition={{ duration: 0.3 }}
           >
             <Avatar className="h-12 w-12 flex-shrink-0">

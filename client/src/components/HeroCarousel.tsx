@@ -128,7 +128,7 @@ export default function HeroCarousel() {
                 animate={{ scale: 1 }}
                 transition={{ duration: 8, ease: 'linear' }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-primary/10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-primary/20 to-primary/5" />
             </motion.div>
           );
         })}

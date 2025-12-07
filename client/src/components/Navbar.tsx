@@ -39,8 +39,8 @@ export default function Navbar() {
               />
             ) : (
               <motion.div
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
               >
                 <Globe className="h-8 w-8 text-primary" />
               </motion.div>

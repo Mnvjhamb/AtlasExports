@@ -411,26 +411,28 @@ export default function AdminDashboard() {
       </Card>
 
       {/* Alerts/Notifications */}
-      {(stats?.contacts.unread || stats?.reviews.pending) && (
-        <Card className="border-orange-200 dark:border-orange-900 bg-orange-50 dark:bg-orange-950/30">
+      {((stats?.contacts.unread ?? 0) > 0 ||
+        (stats?.reviews.pending ?? 0) > 0) && (
+        <Card className="border-orange-200 bg-orange-50">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-medium text-orange-700 dark:text-orange-400">
+                <h4 className="font-medium text-orange-700">
                   Items need attention
                 </h4>
-                <ul className="text-sm text-orange-600 dark:text-orange-400/80 mt-1 space-y-1">
-                  {stats?.contacts.unread > 0 && (
+                <ul className="text-sm text-orange-600 mt-1 space-y-1">
+                  {(stats?.contacts.unread ?? 0) > 0 && (
                     <li>
-                      • {stats.contacts.unread} unread contact submission
-                      {stats.contacts.unread > 1 ? 's' : ''}
+                      • {stats?.contacts.unread ?? 0} unread contact submission
+                      {(stats?.contacts.unread ?? 0) > 1 ? 's' : ''}
                     </li>
                   )}
-                  {stats?.reviews.pending > 0 && (
+                  {(stats?.reviews.pending ?? 0) > 0 && (
                     <li>
-                      • {stats.reviews.pending} review
-                      {stats.reviews.pending > 1 ? 's' : ''} pending approval
+                      • {stats?.reviews.pending ?? 0} review
+                      {(stats?.reviews.pending ?? 0) > 1 ? 's' : ''} pending
+                      approval
                     </li>
                   )}
                 </ul>
