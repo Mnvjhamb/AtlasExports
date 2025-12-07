@@ -211,8 +211,9 @@ export default function HeroCarousel() {
             className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-auto bg-black/30 backdrop-blur text-white hover:bg-black/50 rounded-full h-12 w-12 flex items-center justify-center"
             onClick={prevSlide}
             data-testid="button-carousel-prev"
-            whileHover={{ scale: 1.1, backgroundColor: 'rgba(0,0,0,0.5)' }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            whileTap={{ scale: 0.95 }}
+            style={{ transformOrigin: 'center' }}
             transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
             <ChevronLeft className="h-8 w-8" />
@@ -224,8 +225,9 @@ export default function HeroCarousel() {
             className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto bg-black/30 backdrop-blur text-white hover:bg-black/50 rounded-full h-12 w-12 flex items-center justify-center"
             onClick={nextSlide}
             data-testid="button-carousel-next"
-            whileHover={{ scale: 1.1, backgroundColor: 'rgba(0,0,0,0.5)' }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            whileTap={{ scale: 0.95 }}
+            style={{ transformOrigin: 'center' }}
             transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
             <ChevronRight className="h-8 w-8" />
