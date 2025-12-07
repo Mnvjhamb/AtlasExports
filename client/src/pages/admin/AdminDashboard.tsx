@@ -161,9 +161,7 @@ export default function AdminDashboard() {
           value={stats?.clients.active || 0}
           icon={Users}
           subtitle={
-            stats?.clients.total
-              ? `${stats.clients.total} total`
-              : undefined
+            stats?.clients.total ? `${stats.clients.total} total` : undefined
           }
           isLoading={statsLoading}
         />
@@ -185,7 +183,9 @@ export default function AdminDashboard() {
           icon={Package}
           subtitle={
             stats?.products.total !== stats?.products.active
-              ? `${(stats?.products.total || 0) - (stats?.products.active || 0)} inactive`
+              ? `${
+                  (stats?.products.total || 0) - (stats?.products.active || 0)
+                } inactive`
               : 'All active'
           }
           isLoading={statsLoading}
@@ -196,7 +196,9 @@ export default function AdminDashboard() {
           icon={MessageSquare}
           subtitle={
             stats?.contacts.total
-              ? `${Math.round(((stats.contacts.replied || 0) / stats.contacts.total) * 100)}% response rate`
+              ? `${Math.round(
+                  ((stats.contacts.replied || 0) / stats.contacts.total) * 100
+                )}% response rate`
               : undefined
           }
           subtitleVariant="success"
@@ -219,7 +221,10 @@ export default function AdminDashboard() {
             {contactsLoading ? (
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
+                  <Skeleton
+                    key={i}
+                    className="h-16 w-full"
+                  />
                 ))}
               </div>
             ) : recentContacts && recentContacts.length > 0 ? (
@@ -260,7 +265,10 @@ export default function AdminDashboard() {
                   </div>
                 ))}
                 <Link to="/admin/contacts">
-                  <Button variant="outline" className="w-full mt-2">
+                  <Button
+                    variant="outline"
+                    className="w-full mt-2"
+                  >
                     View All Contacts
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
@@ -291,7 +299,10 @@ export default function AdminDashboard() {
             {reviewsLoading ? (
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
+                  <Skeleton
+                    key={i}
+                    className="h-16 w-full"
+                  />
                 ))}
               </div>
             ) : recentReviews && recentReviews.length > 0 ? (
@@ -309,8 +320,8 @@ export default function AdminDashboard() {
                             review.status === 'approved'
                               ? 'default'
                               : review.status === 'rejected'
-                                ? 'destructive'
-                                : 'secondary'
+                              ? 'destructive'
+                              : 'secondary'
                           }
                           className="text-xs"
                         >
@@ -333,7 +344,10 @@ export default function AdminDashboard() {
                   </div>
                 ))}
                 <Link to="/admin/reviews">
-                  <Button variant="outline" className="w-full mt-2">
+                  <Button
+                    variant="outline"
+                    className="w-full mt-2"
+                  >
                     View All Reviews
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
@@ -357,25 +371,37 @@ export default function AdminDashboard() {
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Link to="/admin/products">
-              <Button variant="outline" className="w-full h-auto py-4 flex-col">
+              <Button
+                variant="outline"
+                className="w-full h-auto py-4 flex-col"
+              >
                 <Package className="h-6 w-6 mb-2" />
                 <span>Add Product</span>
               </Button>
             </Link>
             <Link to="/admin/categories">
-              <Button variant="outline" className="w-full h-auto py-4 flex-col">
+              <Button
+                variant="outline"
+                className="w-full h-auto py-4 flex-col"
+              >
                 <FolderOpen className="h-6 w-6 mb-2" />
                 <span>Add Category</span>
               </Button>
             </Link>
             <Link to="/admin/clients">
-              <Button variant="outline" className="w-full h-auto py-4 flex-col">
+              <Button
+                variant="outline"
+                className="w-full h-auto py-4 flex-col"
+              >
                 <Users className="h-6 w-6 mb-2" />
                 <span>Add Client</span>
               </Button>
             </Link>
             <Link to="/admin/content">
-              <Button variant="outline" className="w-full h-auto py-4 flex-col">
+              <Button
+                variant="outline"
+                className="w-full h-auto py-4 flex-col"
+              >
                 <TrendingUp className="h-6 w-6 mb-2" />
                 <span>Edit Content</span>
               </Button>

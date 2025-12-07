@@ -17,7 +17,12 @@ import equipmentImg from '@assets/generated_images/hydraulic_disc_harrow_product
 import marbleImg from '@assets/generated_images/marble_granite_stone_slabs.png';
 
 // Default clients if database is empty
-const defaultClients: Array<{ id?: string; name: string; country: string; logoUrl?: string }> = [
+const defaultClients: Array<{
+  id?: string;
+  name: string;
+  country: string;
+  logoUrl?: string;
+}> = [
   { name: 'AgriTech Solutions', country: 'United Arab Emirates' },
   { name: 'Global Harvest Co.', country: 'United Kingdom' },
   { name: 'FarmPro Industries', country: 'Australia' },
@@ -69,7 +74,8 @@ export default function Home() {
   const { data: dbClients, isLoading: clientsLoading } = useClients(true);
 
   // Use database clients if available, otherwise use defaults
-  const clients = dbClients && dbClients.length > 0 ? dbClients : defaultClients;
+  const clients =
+    dbClients && dbClients.length > 0 ? dbClients : defaultClients;
 
   const handleRequestQuote = (productId: string) => {
     console.log('Quote requested for product:', productId);
@@ -80,22 +86,34 @@ export default function Home() {
       <HeroCarousel />
 
       {/* Categories Section */}
-      <section className="py-16 bg-background">
+      <section className="py-20 md:py-24 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
           >
-            <h2 className="text-3xl font-bold mb-4">
+            <motion.h2
+              className="text-4xl md:text-5xl font-bold mb-6 text-foreground"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
               {home?.categoriesTitle || 'Our Product Categories'}
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            </motion.h2>
+            <motion.p
+              className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
               {home?.categoriesSubtitle ||
                 'Explore our diverse range of quality products, from agricultural machinery to premium commodities, furniture, and building materials.'}
-            </p>
+            </motion.p>
           </motion.div>
 
           {categoriesLoading ? (
@@ -132,24 +150,41 @@ export default function Home() {
       <TrustIndicators />
 
       {/* Featured Products Section */}
-      <section className="py-16 bg-background">
+      <section className="py-20 md:py-24 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            className="flex items-center justify-between mb-12 flex-wrap gap-4"
-            initial={{ opacity: 0, y: 20 }}
+            className="flex items-center justify-between mb-16 flex-wrap gap-4"
+            initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
           >
-            <div>
-              <h2 className="text-3xl font-bold mb-2">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <motion.h2
+                className="text-4xl md:text-5xl font-bold mb-4 text-foreground"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.25 }}
+              >
                 {home?.featuredProductsTitle || 'Featured Products'}
-              </h2>
-              <p className="text-muted-foreground">
+              </motion.h2>
+              <motion.p
+                className="text-lg text-muted-foreground max-w-2xl"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.25, delay: 0.15 }}
+              >
                 {home?.featuredProductsSubtitle ||
                   'Discover our best-selling products trusted by businesses worldwide'}
-              </p>
-            </div>
+              </motion.p>
+            </motion.div>
             <Link to="/products">
               <Button
                 variant="outline"
@@ -163,7 +198,7 @@ export default function Home() {
           </motion.div>
 
           {productsLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {[...Array(6)].map((_, i) => (
                 <ProductSkeleton key={i} />
               ))}
@@ -173,7 +208,7 @@ export default function Home() {
               Failed to load products. Please try again later.
             </div>
           ) : featuredProducts && featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredProducts.map((product, index) => (
                 <ProductCard
                   key={product.id}
@@ -210,60 +245,74 @@ export default function Home() {
       </section>
 
       {/* Clients Section */}
-      <section className="py-16 bg-card border-t border-b border-border">
+      <section className="py-20 md:py-24 bg-card border-t border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            className="text-center mb-12"
+            className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl font-bold mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
               {home?.clientsTitle || 'Our Trusted Clients'}
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               {home?.clientsSubtitle ||
                 "We're proud to partner with leading businesses across the globe. Here are some of the companies that trust The Atlas Exports."}
             </p>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {clientsLoading ? (
-              [...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-20 w-full rounded-lg" />
-              ))
-            ) : (
-              clients.map((client, index) => (
-                <ClientCard
-                  key={client.id ?? index}
-                  name={client.name}
-                  country={client.country}
-                  logoUrl={client.logoUrl}
-                  index={index}
-                />
-              ))
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {clientsLoading
+              ? [...Array(4)].map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    className="h-20 w-full rounded-lg"
+                  />
+                ))
+              : clients.map((client, index) => (
+                  <ClientCard
+                    key={client.id ?? index}
+                    name={client.name}
+                    country={client.country}
+                    logoUrl={client.logoUrl}
+                    index={index}
+                  />
+                ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-background">
+      <section className="py-20 md:py-28 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              initial={{ opacity: 0, x: -50, scale: 0.95 }}
+              whileInView={{ opacity: 1, x: 0, scale: 1 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
             >
-              <h2 className="text-3xl font-bold mb-4">
-                {home?.ctaTitle || "Partner with Punjab's Trusted Export Company"}
-              </h2>
-              <p className="text-muted-foreground mb-6">
+              <motion.h2
+                className="text-4xl md:text-5xl font-bold mb-6 text-foreground leading-tight"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              >
+                {home?.ctaTitle ||
+                  "Partner with Punjab's Trusted Export Company"}
+              </motion.h2>
+              <motion.p
+                className="text-lg text-muted-foreground mb-8 leading-relaxed"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
                 {home?.ctaDescription ||
                   'With over 14 years of experience in international trade, The Atlas Exports has built a reputation for quality, reliability, and exceptional customer service. We handle everything from sourcing to shipping, making your import process seamless.'}
-              </p>
+              </motion.p>
               <ul className="space-y-3 mb-8">
                 {(
                   home?.ctaFeatures || [
@@ -276,58 +325,105 @@ export default function Home() {
                   <motion.li
                     key={index}
                     className="flex items-center gap-2"
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
+                    transition={{ duration: 0.25, delay: index * 0.08 }}
+                    whileHover={{ x: 5 }}
                   >
-                    <div className="h-2 w-2 rounded-full bg-primary" />
+                    <motion.div
+                      className="h-2 w-2 rounded-full bg-primary"
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.3, delay: index * 0.15 + 0.2 }}
+                      whileHover={{ scale: 1.5 }}
+                    />
                     <span className="text-muted-foreground">{item}</span>
                   </motion.li>
                 ))}
               </ul>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <motion.div
+                className="flex flex-col sm:flex-row gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: 0.3 }}
+              >
                 <Link to="/contact">
-                  <Button size="lg" data-testid="button-cta-contact">
-                    Get in Touch
-                  </Button>
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      size="lg"
+                      data-testid="button-cta-contact"
+                    >
+                      Get in Touch
+                    </Button>
+                  </motion.div>
                 </Link>
                 <Link to="/reviews">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    data-testid="button-cta-reviews"
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    See Reviews
-                  </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      data-testid="button-cta-reviews"
+                    >
+                      See Reviews
+                    </Button>
+                  </motion.div>
                 </Link>
-              </div>
+              </motion.div>
             </motion.div>
             <motion.div
               className="relative"
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              initial={{ opacity: 0, x: 50, scale: 0.9 }}
+              whileInView={{ opacity: 1, x: 0, scale: 1 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
             >
-              <img
+              <motion.img
                 src={marbleImg}
                 alt="Quality products"
                 className="rounded-lg shadow-lg"
+                whileHover={{ scale: 1.05, rotate: 1 }}
+                transition={{ duration: 0.4 }}
               />
               <motion.div
-                className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-6 rounded-lg hidden lg:block"
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                className="absolute -bottom-6 -left-6 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-6 rounded-xl shadow-xl hidden lg:block border-2 border-primary-foreground/10 animate-float"
+                initial={{ opacity: 0, scale: 0, rotate: -180 }}
+                whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.3 }}
+                transition={{
+                  duration: 0.4,
+                  delay: 0.2,
+                  type: 'spring',
+                  stiffness: 200,
+                }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
               >
-                <div className="text-4xl font-bold">
+                <motion.div
+                  className="text-4xl font-bold"
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.25, delay: 0.3 }}
+                >
                   {home?.ctaBadgeNumber || '14+'}
-                </div>
-                <div className="text-sm opacity-90">
+                </motion.div>
+                <motion.div
+                  className="text-sm opacity-90"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 0.9 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.25, delay: 0.35 }}
+                >
                   {home?.ctaBadgeText || 'Years of Excellence'}
-                </div>
+                </motion.div>
               </motion.div>
             </motion.div>
           </div>

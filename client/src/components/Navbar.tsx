@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ThemeToggle from './ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSiteContent } from '@/hooks/useContent';
 
@@ -22,7 +21,7 @@ export default function Navbar() {
   const companyInfo = content?.companyInfo;
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+    <nav className="sticky top-0 z-50 bg-background/98 backdrop-blur-lg supports-[backdrop-filter]:bg-background/90 border-b border-border/50 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link
@@ -51,25 +50,37 @@ export default function Navbar() {
                 {companyInfo?.name || 'The Atlas Exports'}
               </span>
               <span className="text-xs text-muted-foreground">
-                {companyInfo?.city || 'Punjab'}, {companyInfo?.country || 'India'}
+                {companyInfo?.city || 'Punjab'},{' '}
+                {companyInfo?.country || 'India'}
               </span>
             </div>
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
-              <Link key={link.href} to={link.href}>
+              <Link
+                key={link.href}
+                to={link.href}
+              >
                 <Button
-                  variant={location.pathname === link.href ? 'secondary' : 'ghost'}
+                  variant={
+                    location.pathname === link.href ? 'secondary' : 'ghost'
+                  }
                   className="text-sm relative"
-                  data-testid={`link-nav-${link.label.toLowerCase().replace(' ', '-')}`}
+                  data-testid={`link-nav-${link.label
+                    .toLowerCase()
+                    .replace(' ', '-')}`}
                 >
                   {link.label}
                   {location.pathname === link.href && (
                     <motion.div
                       className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
                       layoutId="navbar-indicator"
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 30,
+                      }}
                     />
                   )}
                 </Button>
@@ -78,9 +89,15 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Link to="/admin" className="hidden md:block">
-              <Button variant="outline" size="sm" data-testid="link-admin-portal">
+            <Link
+              to="/admin"
+              className="hidden md:block"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="link-admin-portal"
+              >
                 Admin
               </Button>
             </Link>
@@ -138,10 +155,14 @@ export default function Navbar() {
                 >
                   <Link to={link.href}>
                     <Button
-                      variant={location.pathname === link.href ? 'secondary' : 'ghost'}
+                      variant={
+                        location.pathname === link.href ? 'secondary' : 'ghost'
+                      }
                       className="w-full justify-start"
                       onClick={() => setMobileMenuOpen(false)}
-                      data-testid={`link-mobile-${link.label.toLowerCase().replace(' ', '-')}`}
+                      data-testid={`link-mobile-${link.label
+                        .toLowerCase()
+                        .replace(' ', '-')}`}
                     >
                       {link.label}
                     </Button>
