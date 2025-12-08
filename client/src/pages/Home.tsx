@@ -245,7 +245,7 @@ export default function Home() {
       </section>
 
       {/* Clients Section */}
-      <section className="py-20 md:py-24 bg-card border-t border-b border-border">
+      {/* <section className="py-20 md:py-24 bg-card border-t border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center mb-16"
@@ -281,7 +281,7 @@ export default function Home() {
                 ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-20 md:py-28 bg-background">
@@ -393,7 +393,7 @@ export default function Home() {
                 whileHover={{ scale: 1.05, rotate: 1 }}
                 transition={{ duration: 0.4 }}
               />
-              <motion.div
+              {/* <motion.div
                 className="absolute -bottom-6 -left-6 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-6 rounded-xl shadow-xl hidden lg:block border-2 border-primary-foreground/10 animate-float"
                 initial={{ opacity: 0, scale: 0, rotate: -180 }}
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -424,7 +424,7 @@ export default function Home() {
                 >
                   {home?.ctaBadgeText || 'Years of Excellence'}
                 </motion.div>
-              </motion.div>
+              </motion.div> */}
             </motion.div>
           </div>
         </div>

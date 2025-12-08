@@ -17,11 +17,6 @@ const indicators = [
     value: '5',
     label: 'Product Categories',
   },
-  {
-    icon: Users,
-    value: '500+',
-    label: 'Happy Clients',
-  },
 ];
 
 export default function TrustIndicators() {
@@ -29,7 +24,7 @@ export default function TrustIndicators() {
     <section className="py-20 md:py-28 bg-gradient-to-r from-primary via-primary/95 to-primary text-primary-foreground overflow-hidden relative">
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djJoLTJ2LTJoMnptMC0yNHYyaC0yVjEwaDJ6TTEwIDM0djJoLTJ2LTJoMnptMC0yNHYyaC0yVjEwaDJ6TTM2IDUwVjQ4aDJ2MkgzNnptMC0yNFYyNGgyVjI2SDM2ek0xMCA1MFY0OGgyVjUwSDEwem0wLTI0VjI0aDJWMjZIMTB6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-12">
           {indicators.map((item, index) => (
             <motion.div
               key={index}

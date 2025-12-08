@@ -84,7 +84,7 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <Link
               to="/admin"
               className="hidden md:block"
@@ -128,7 +128,7 @@ export default function Navbar() {
                 )}
               </AnimatePresence>
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
 

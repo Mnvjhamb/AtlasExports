@@ -1,6 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Globe, Mail, Phone, MapPin } from 'lucide-react';
-import { SiWhatsapp, SiLinkedin, SiInstagram, SiFacebook } from 'react-icons/si';
+import {
+  SiWhatsapp,
+  SiLinkedin,
+  SiInstagram,
+  SiFacebook,
+} from 'react-icons/si';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSiteContent } from '@/hooks/useContent';
@@ -15,7 +20,8 @@ const quickLinks = [
 
 export default function Footer() {
   const { data: content, isLoading: contentLoading } = useSiteContent();
-  const { data: categories, isLoading: categoriesLoading } = useCategories(true);
+  const { data: categories, isLoading: categoriesLoading } =
+    useCategories(true);
 
   const companyInfo = content?.companyInfo;
   const socialLinks = content?.socialLinks;
@@ -82,15 +88,10 @@ export default function Footer() {
                 <h3 className="font-bold text-lg">
                   {companyInfo?.name || 'The Atlas Exports'}
                 </h3>
-                <p className="text-xs text-muted-foreground">
-                  {companyInfo?.city || 'Ludhiana'},{' '}
-                  {companyInfo?.country || 'India'}
-                </p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              {footer?.description ||
-                companyInfo?.description ||
+              {companyInfo?.description ||
                 'Your trusted partner for premium agricultural equipment and commodities. Exporting quality products from Punjab to the world.'}
             </p>
             {socialItems.length > 0 && (
@@ -103,7 +104,10 @@ export default function Footer() {
                     rel="noopener noreferrer"
                     data-testid={`link-social-${social.label.toLowerCase()}`}
                   >
-                    <Button variant="outline" size="icon">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                    >
                       <social.icon className="h-4 w-4" />
                     </Button>
                   </a>
@@ -120,7 +124,9 @@ export default function Footer() {
                   <Link
                     to={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    data-testid={`link-footer-${link.label.toLowerCase().replace(' ', '-')}`}
+                    data-testid={`link-footer-${link.label
+                      .toLowerCase()
+                      .replace(' ', '-')}`}
                   >
                     {link.label}
                   </Link>
@@ -184,14 +190,21 @@ export default function Footer() {
 
         <div className="mt-8 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} {companyInfo?.name || 'The Atlas Exports'}.{' '}
+            © {new Date().getFullYear()}{' '}
+            {companyInfo?.name || 'The Atlas Exports'}.{' '}
             {footer?.copyrightText || 'All rights reserved.'}
           </p>
           <div className="flex gap-4 text-sm text-muted-foreground">
-            <Link to="/privacy" className="hover:text-foreground">
+            <Link
+              to="/privacy"
+              className="hover:text-foreground"
+            >
               Privacy Policy
             </Link>
-            <Link to="/terms" className="hover:text-foreground">
+            <Link
+              to="/terms"
+              className="hover:text-foreground"
+            >
               Terms of Service
             </Link>
           </div>

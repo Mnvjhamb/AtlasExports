@@ -71,7 +71,9 @@ export default function About() {
             </h1>
             <p className="text-lg md:text-xl text-white/90">
               {about?.heroSubtitle ||
-                `${companyInfo?.tagline || 'Your Trusted Partner in Global Trade'} Since ${companyInfo?.foundedYear || '2010'}`}
+                `${
+                  companyInfo?.tagline || 'Your Trusted Partner in Global Trade'
+                } Since ${companyInfo?.foundedYear || '2010'}`}
             </p>
           </div>
         </div>
@@ -84,7 +86,10 @@ export default function About() {
               <h2 className="text-3xl font-bold mb-6">Who We Are</h2>
               <div className="prose prose-lg text-muted-foreground">
                 {(about?.description || '').split('\n\n').map((para, i) => (
-                  <p key={i} className="mb-4">
+                  <p
+                    key={i}
+                    className="mb-4"
+                  >
                     {para}
                   </p>
                 ))}
@@ -147,7 +152,10 @@ export default function About() {
             {(about?.whyChooseUsItems || []).map((item) => {
               const Icon = iconMap[item.icon] || Award;
               return (
-                <Card key={item.id} className="text-center">
+                <Card
+                  key={item.id}
+                  className="text-center"
+                >
                   <CardContent className="p-6">
                     <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                       <Icon className="h-7 w-7 text-primary" />
@@ -171,12 +179,17 @@ export default function About() {
               {about?.teamTitle || 'Our Leadership'}
             </h2>
             <p className="text-muted-foreground">
-              {about?.teamSubtitle || 'Meet the team driving our vision forward'}
+              {about?.teamSubtitle ||
+                'Meet the team driving our vision forward'}
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-8 max-w-3xl mx-auto">
             {(about?.teamMembers || []).map((member) => (
-              <div key={member.id} className="text-center">
+              <div
+                key={member.id}
+                className="text-center flex-shrink-0"
+                style={{ minWidth: '200px' }}
+              >
                 <Avatar className="h-24 w-24 mx-auto mb-4">
                   <AvatarFallback className="text-2xl bg-primary/10 text-primary">
                     {member.initials}
@@ -197,11 +210,16 @@ export default function About() {
           </h2>
           <p className="text-muted-foreground mb-8">
             {about?.ctaSubtitle ||
-              `Join hundreds of satisfied clients worldwide who trust ${companyInfo?.name || 'The Atlas Exports'} for their sourcing needs.`}
+              `Join hundreds of satisfied clients worldwide who trust ${
+                companyInfo?.name || 'The Atlas Exports'
+              } for their sourcing needs.`}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/contact">
-              <Button size="lg" data-testid="button-about-contact">
+              <Button
+                size="lg"
+                data-testid="button-about-contact"
+              >
                 Get in Touch
               </Button>
             </Link>
