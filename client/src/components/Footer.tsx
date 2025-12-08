@@ -188,7 +188,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+        {/* <div className="mt-8 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()}{' '}
             {companyInfo?.name || 'The Atlas Exports'}.{' '}
@@ -208,7 +208,7 @@ export default function Footer() {
               Terms of Service
             </Link>
           </div>
-        </div>
+        </div> */}
       </div>
     </footer>
   );
