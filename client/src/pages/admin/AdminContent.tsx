@@ -81,6 +81,9 @@ export default function AdminContent() {
   const [hasChanges, setHasChanges] = useState(false);
   const [uploadingSlide, setUploadingSlide] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingTeamMember, setUploadingTeamMember] = useState<string | null>(
+    null
+  );
 
   // Load content from database
   useEffect(() => {
@@ -303,6 +306,47 @@ export default function AdminContent() {
     setHasChanges(true);
   };
 
+  const handleTeamMemberImageUpload = async (
+    memberId: string,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!isValidImageFile(file)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please upload a valid image file',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!isValidFileSize(file, 5)) {
+      toast({
+        title: 'File too large',
+        description: 'Image must be less than 5MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadingTeamMember(memberId);
+    try {
+      const url = await uploadImage(file, 'team');
+      handleTeamMemberChange(memberId, 'imageUrl', url);
+      toast({ title: 'Image uploaded' });
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description: 'Failed to upload image',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingTeamMember(null);
+    }
+  };
+
   // Why Choose Us items management
   const handleAddWhyChooseUs = () => {
     const newItem: WhyChooseUsItem = {
@@ -326,7 +370,9 @@ export default function AdminContent() {
       ...prev,
       about: {
         ...prev.about,
-        whyChooseUsItems: prev.about.whyChooseUsItems.filter((i) => i.id !== id),
+        whyChooseUsItems: prev.about.whyChooseUsItems.filter(
+          (i) => i.id !== id
+        ),
       },
     }));
     setHasChanges(true);
@@ -439,33 +485,57 @@ export default function AdminContent() {
         </div>
       </div>
 
-      <Tabs defaultValue="company" className="space-y-6">
+      <Tabs
+        defaultValue="company"
+        className="space-y-6"
+      >
         <TabsList className="flex-wrap h-auto gap-1">
-          <TabsTrigger value="company" className="gap-2">
+          <TabsTrigger
+            value="company"
+            className="gap-2"
+          >
             <Building2 className="h-4 w-4" />
             Company
           </TabsTrigger>
-          <TabsTrigger value="home" className="gap-2">
+          <TabsTrigger
+            value="home"
+            className="gap-2"
+          >
             <Home className="h-4 w-4" />
             Home Page
           </TabsTrigger>
-          <TabsTrigger value="hero" className="gap-2">
+          <TabsTrigger
+            value="hero"
+            className="gap-2"
+          >
             <ImageIcon className="h-4 w-4" />
             Hero Carousel
           </TabsTrigger>
-          <TabsTrigger value="about" className="gap-2">
+          <TabsTrigger
+            value="about"
+            className="gap-2"
+          >
             <FileText className="h-4 w-4" />
             About Page
           </TabsTrigger>
-          <TabsTrigger value="team" className="gap-2">
+          <TabsTrigger
+            value="team"
+            className="gap-2"
+          >
             <Users className="h-4 w-4" />
             Team
           </TabsTrigger>
-          <TabsTrigger value="contact" className="gap-2">
+          <TabsTrigger
+            value="contact"
+            className="gap-2"
+          >
             <Phone className="h-4 w-4" />
             Contact
           </TabsTrigger>
-          <TabsTrigger value="social" className="gap-2">
+          <TabsTrigger
+            value="social"
+            className="gap-2"
+          >
             <Globe className="h-4 w-4" />
             Social & Footer
           </TabsTrigger>
@@ -525,10 +595,12 @@ export default function AdminContent() {
                   </div>
                   <div className="flex-1 space-y-2">
                     <p className="text-sm text-muted-foreground">
-                      This logo will be displayed in the navigation bar and footer.
+                      This logo will be displayed in the navigation bar and
+                      footer.
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Recommended: Square image (e.g., 200x200px) or horizontal logo with transparent background.
+                      Recommended: Square image (e.g., 200x200px) or horizontal
+                      logo with transparent background.
                     </p>
                     {content.companyInfo.logoUrl && (
                       <Button
@@ -548,186 +620,206 @@ export default function AdminContent() {
             </Card>
 
             <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Company Name</Label>
-                  <Input
-                    value={content.companyInfo.name}
-                    onChange={(e) =>
-                      handleChange('companyInfo', 'name', e.target.value)
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Tagline</Label>
-                  <Input
-                    value={content.companyInfo.tagline}
-                    onChange={(e) =>
-                      handleChange('companyInfo', 'tagline', e.target.value)
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea
-                    value={content.companyInfo.description}
-                    onChange={(e) =>
-                      handleChange('companyInfo', 'description', e.target.value)
-                    }
-                    rows={3}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Basic Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Founded Year</Label>
+                    <Label>Company Name</Label>
                     <Input
-                      value={content.companyInfo.foundedYear}
+                      value={content.companyInfo.name}
                       onChange={(e) =>
-                        handleChange('companyInfo', 'foundedYear', e.target.value)
+                        handleChange('companyInfo', 'name', e.target.value)
                       }
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Countries Served</Label>
+                    <Label>Tagline</Label>
                     <Input
-                      value={content.companyInfo.countriesServed}
+                      value={content.companyInfo.tagline}
+                      onChange={(e) =>
+                        handleChange('companyInfo', 'tagline', e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      value={content.companyInfo.description}
                       onChange={(e) =>
                         handleChange(
                           'companyInfo',
-                          'countriesServed',
+                          'description',
                           e.target.value
                         )
                       }
+                      rows={3}
                     />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Founded Year</Label>
+                      <Input
+                        value={content.companyInfo.foundedYear}
+                        onChange={(e) =>
+                          handleChange(
+                            'companyInfo',
+                            'foundedYear',
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Countries Served</Label>
+                      <Input
+                        value={content.companyInfo.countriesServed}
+                        onChange={(e) =>
+                          handleChange(
+                            'companyInfo',
+                            'countriesServed',
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contact Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Phone</Label>
+                      <Input
+                        value={content.companyInfo.phone}
+                        onChange={(e) =>
+                          handleChange('companyInfo', 'phone', e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Phone 2</Label>
+                      <Input
+                        value={content.companyInfo.phone2 || ''}
+                        onChange={(e) =>
+                          handleChange('companyInfo', 'phone2', e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input
+                        value={content.companyInfo.email}
+                        onChange={(e) =>
+                          handleChange('companyInfo', 'email', e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Sales Email</Label>
+                      <Input
+                        value={content.companyInfo.salesEmail || ''}
+                        onChange={(e) =>
+                          handleChange(
+                            'companyInfo',
+                            'salesEmail',
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    <Label>Phone</Label>
+                    <Label>Address</Label>
                     <Input
-                      value={content.companyInfo.phone}
+                      value={content.companyInfo.address}
                       onChange={(e) =>
-                        handleChange('companyInfo', 'phone', e.target.value)
+                        handleChange('companyInfo', 'address', e.target.value)
                       }
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Phone 2</Label>
-                    <Input
-                      value={content.companyInfo.phone2 || ''}
-                      onChange={(e) =>
-                        handleChange('companyInfo', 'phone2', e.target.value)
-                      }
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>City</Label>
+                      <Input
+                        value={content.companyInfo.city}
+                        onChange={(e) =>
+                          handleChange('companyInfo', 'city', e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>State</Label>
+                      <Input
+                        value={content.companyInfo.state}
+                        onChange={(e) =>
+                          handleChange('companyInfo', 'state', e.target.value)
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input
-                      value={content.companyInfo.email}
-                      onChange={(e) =>
-                        handleChange('companyInfo', 'email', e.target.value)
-                      }
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Country</Label>
+                      <Input
+                        value={content.companyInfo.country}
+                        onChange={(e) =>
+                          handleChange('companyInfo', 'country', e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Postal Code</Label>
+                      <Input
+                        value={content.companyInfo.postalCode}
+                        onChange={(e) =>
+                          handleChange(
+                            'companyInfo',
+                            'postalCode',
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Sales Email</Label>
-                    <Input
-                      value={content.companyInfo.salesEmail || ''}
-                      onChange={(e) =>
-                        handleChange('companyInfo', 'salesEmail', e.target.value)
-                      }
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Business Days</Label>
+                      <Input
+                        value={content.companyInfo.businessDays}
+                        onChange={(e) =>
+                          handleChange(
+                            'companyInfo',
+                            'businessDays',
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Business Hours</Label>
+                      <Input
+                        value={content.companyInfo.businessHours}
+                        onChange={(e) =>
+                          handleChange(
+                            'companyInfo',
+                            'businessHours',
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Address</Label>
-                  <Input
-                    value={content.companyInfo.address}
-                    onChange={(e) =>
-                      handleChange('companyInfo', 'address', e.target.value)
-                    }
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>City</Label>
-                    <Input
-                      value={content.companyInfo.city}
-                      onChange={(e) =>
-                        handleChange('companyInfo', 'city', e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>State</Label>
-                    <Input
-                      value={content.companyInfo.state}
-                      onChange={(e) =>
-                        handleChange('companyInfo', 'state', e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Country</Label>
-                    <Input
-                      value={content.companyInfo.country}
-                      onChange={(e) =>
-                        handleChange('companyInfo', 'country', e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Postal Code</Label>
-                    <Input
-                      value={content.companyInfo.postalCode}
-                      onChange={(e) =>
-                        handleChange('companyInfo', 'postalCode', e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Business Days</Label>
-                    <Input
-                      value={content.companyInfo.businessDays}
-                      onChange={(e) =>
-                        handleChange('companyInfo', 'businessDays', e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Business Hours</Label>
-                    <Input
-                      value={content.companyInfo.businessHours}
-                      onChange={(e) =>
-                        handleChange(
-                          'companyInfo',
-                          'businessHours',
-                          e.target.value
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </TabsContent>
@@ -772,7 +864,11 @@ export default function AdminContent() {
                   <Input
                     value={content.home.featuredProductsTitle}
                     onChange={(e) =>
-                      handleChange('home', 'featuredProductsTitle', e.target.value)
+                      handleChange(
+                        'home',
+                        'featuredProductsTitle',
+                        e.target.value
+                      )
                     }
                   />
                 </div>
@@ -858,7 +954,10 @@ export default function AdminContent() {
                   </div>
                   <div className="space-y-2">
                     {content.home.ctaFeatures?.map((feature, index) => (
-                      <div key={index} className="flex gap-2">
+                      <div
+                        key={index}
+                        className="flex gap-2"
+                      >
                         <Input
                           value={feature}
                           onChange={(e) =>
@@ -914,7 +1013,11 @@ export default function AdminContent() {
                     Manage the homepage hero carousel slides
                   </CardDescription>
                 </div>
-                <Button onClick={handleAddSlide} variant="outline" size="sm">
+                <Button
+                  onClick={handleAddSlide}
+                  variant="outline"
+                  size="sm"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Slide
                 </Button>
@@ -956,7 +1059,11 @@ export default function AdminContent() {
                         <Textarea
                           value={slide.subtitle}
                           onChange={(e) =>
-                            handleSlideChange(slide.id, 'subtitle', e.target.value)
+                            handleSlideChange(
+                              slide.id,
+                              'subtitle',
+                              e.target.value
+                            )
                           }
                           rows={2}
                         />
@@ -1119,7 +1226,11 @@ export default function AdminContent() {
                     <Input
                       value={content.about.whyChooseUsTitle}
                       onChange={(e) =>
-                        handleChange('about', 'whyChooseUsTitle', e.target.value)
+                        handleChange(
+                          'about',
+                          'whyChooseUsTitle',
+                          e.target.value
+                        )
                       }
                     />
                   </div>
@@ -1158,7 +1269,10 @@ export default function AdminContent() {
                               </SelectTrigger>
                               <SelectContent>
                                 {iconOptions.map((icon) => (
-                                  <SelectItem key={icon} value={icon}>
+                                  <SelectItem
+                                    key={icon}
+                                    value={icon}
+                                  >
                                     {icon}
                                   </SelectItem>
                                 ))}
@@ -1247,7 +1361,11 @@ export default function AdminContent() {
                     Leadership team displayed on the About page
                   </CardDescription>
                 </div>
-                <Button onClick={handleAddTeamMember} variant="outline" size="sm">
+                <Button
+                  onClick={handleAddTeamMember}
+                  variant="outline"
+                  size="sm"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Member
                 </Button>
@@ -1297,7 +1415,11 @@ export default function AdminContent() {
                       <Input
                         value={member.name}
                         onChange={(e) =>
-                          handleTeamMemberChange(member.id, 'name', e.target.value)
+                          handleTeamMemberChange(
+                            member.id,
+                            'name',
+                            e.target.value
+                          )
                         }
                       />
                     </div>
@@ -1306,7 +1428,11 @@ export default function AdminContent() {
                       <Input
                         value={member.role}
                         onChange={(e) =>
-                          handleTeamMemberChange(member.id, 'role', e.target.value)
+                          handleTeamMemberChange(
+                            member.id,
+                            'role',
+                            e.target.value
+                          )
                         }
                       />
                     </div>
@@ -1323,6 +1449,56 @@ export default function AdminContent() {
                           )
                         }
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Photo (optional)</Label>
+                      <div className="border-2 border-dashed border-border rounded-lg p-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) =>
+                            handleTeamMemberImageUpload(member.id, e)
+                          }
+                          className="hidden"
+                          id={`team-member-image-${member.id}`}
+                        />
+                        {member.imageUrl ? (
+                          <div className="relative">
+                            <img
+                              src={member.imageUrl}
+                              alt={member.name}
+                              className="w-full h-32 object-cover rounded"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleTeamMemberChange(
+                                  member.id,
+                                  'imageUrl',
+                                  ''
+                                )
+                              }
+                              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label
+                            htmlFor={`team-member-image-${member.id}`}
+                            className="flex flex-col items-center cursor-pointer text-muted-foreground"
+                          >
+                            {uploadingTeamMember === member.id ? (
+                              <Loader2 className="h-8 w-8 animate-spin" />
+                            ) : (
+                              <>
+                                <Upload className="h-8 w-8 mb-2" />
+                                <span className="text-sm">Upload Photo</span>
+                              </>
+                            )}
+                          </label>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -62,6 +62,7 @@ export interface TeamMember {
   name: string;
   role: string;
   initials: string;
+  imageUrl?: string;
 }
 
 export interface WhyChooseUsItem {

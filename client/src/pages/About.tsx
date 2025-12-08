@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import TrustIndicators from '@/components/TrustIndicators';
 import {
@@ -191,6 +191,12 @@ export default function About() {
                 style={{ minWidth: '200px' }}
               >
                 <Avatar className="h-24 w-24 mx-auto mb-4">
+                  {member.imageUrl && (
+                    <AvatarImage
+                      src={member.imageUrl}
+                      alt={member.name}
+                    />
+                  )}
                   <AvatarFallback className="text-2xl bg-primary/10 text-primary">
                     {member.initials}
                   </AvatarFallback>
