@@ -33,7 +33,7 @@ export default function Navbar() {
               <motion.img
                 src={companyInfo.logoUrl}
                 alt={companyInfo?.name || 'Logo'}
-                className="h-16 w-16 object-contain"
+                className="h-20 w-20 object-contain"
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               />
@@ -42,16 +42,12 @@ export default function Navbar() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               >
-                <Globe className="h-14 w-14 text-primary" />
+                <Globe className="h-20 w-20 text-primary" />
               </motion.div>
             )}
             <div className="flex flex-col">
               <span className="font-bold text-2xl leading-tight">
                 {companyInfo?.name || 'The Atlas Exports'}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {companyInfo?.city || 'Punjab'},{' '}
-                {companyInfo?.country || 'India'}
               </span>
             </div>
           </Link>
