@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/dialog';
 import ContactForm from '@/components/ContactForm';
 import ProductCard from '@/components/ProductCard';
-import { ChevronLeft, Package, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Package, AlertCircle } from 'lucide-react';
 import { useProduct, useProducts, useCategories } from '@/hooks/useProducts';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Fallback images
 import equipmentImg from '@assets/generated_images/hydraulic_disc_harrow_product.png';
@@ -25,7 +26,10 @@ function ProductDetailSkeleton() {
         <Skeleton className="aspect-[4/3] w-full rounded-lg" />
         <div className="flex gap-2">
           {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="w-20 h-20 rounded-lg" />
+            <Skeleton
+              key={i}
+              className="w-20 h-20 rounded-lg"
+            />
           ))}
         </div>
       </div>
@@ -47,6 +51,7 @@ export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [selectedImage, setSelectedImage] = useState(0);
   const [showQuoteForm, setShowQuoteForm] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Fetch the product
   const {
@@ -59,10 +64,7 @@ export default function ProductDetail() {
   const { data: categories } = useCategories(true);
 
   // Fetch related products (same category)
-  const { data: relatedProducts } = useProducts(
-    true,
-    product?.categoryId
-  );
+  const { data: relatedProducts } = useProducts(true, product?.categoryId);
 
   // Get category name
   const getCategoryName = (categoryId: string) => {
@@ -82,6 +84,41 @@ export default function ProductDetail() {
       ? product.imageUrls
       : [equipmentImg];
 
+  const imageCount = images.length;
+  const hasMultipleImages = imageCount > 1;
+
+  // Carousel navigation
+  const nextImage = useCallback(() => {
+    setSelectedImage((prev) => (prev + 1) % imageCount);
+  }, [imageCount]);
+
+  const prevImage = useCallback(() => {
+    setSelectedImage((prev) => (prev - 1 + imageCount) % imageCount);
+  }, [imageCount]);
+
+  // Auto-play carousel (only if multiple images)
+  useEffect(() => {
+    if (!hasMultipleImages || isPaused) return;
+    const interval = setInterval(nextImage, 4000);
+    return () => clearInterval(interval);
+  }, [hasMultipleImages, isPaused, nextImage]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!hasMultipleImages) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevImage();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextImage();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasMultipleImages, nextImage, prevImage]);
+
   if (productLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -98,7 +135,10 @@ export default function ProductDetail() {
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Link to="/products">
-            <Button variant="ghost" className="mb-6">
+            <Button
+              variant="ghost"
+              className="mb-6"
+            >
               <ChevronLeft className="h-4 w-4 mr-2" />
               Back to Products
             </Button>
@@ -135,32 +175,91 @@ export default function ProductDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Image Gallery */}
           <div className="space-y-4">
-            <div className="aspect-[4/3] overflow-hidden rounded-lg border border-border">
-              <img
-                src={images[selectedImage]}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
+            <div
+              className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedImage}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="absolute inset-0"
+                >
+                  <img
+                    src={images[selectedImage]}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Carousel Navigation Arrows (only if multiple images) */}
+              {hasMultipleImages && (
+                <>
+                  <button
+                    type="button"
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-background/90 hover:bg-background border border-border shadow-lg backdrop-blur-sm transition-all hover:scale-110"
+                    data-testid="button-prev-image"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-background/90 hover:bg-background border border-border shadow-lg backdrop-blur-sm transition-all hover:scale-110"
+                    data-testid="button-next-image"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+
+                  {/* Image Indicators */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    {images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImage(index)}
+                        className={`h-2 rounded-full transition-all ${
+                          index === selectedImage
+                            ? 'w-8 bg-primary'
+                            : 'w-2 bg-background/60 hover:bg-background/80'
+                        }`}
+                        aria-label={`Go to image ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-            {images.length > 1 && (
+
+            {/* Thumbnail Gallery */}
+            {hasMultipleImages && (
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {images.map((img, index) => (
-                  <button
+                  <motion.button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
                       index === selectedImage
-                        ? 'border-primary'
+                        ? 'border-primary ring-2 ring-primary ring-offset-2'
                         : 'border-border hover:border-muted-foreground'
                     }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     data-testid={`button-image-${index}`}
                   >
                     <img
                       src={img}
-                      alt=""
+                      alt={`${product.name} thumbnail ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             )}
@@ -177,7 +276,8 @@ export default function ProductDetail() {
             {/* Min Order Quantity */}
             {product.minOrderQuantity && (
               <p className="text-sm text-muted-foreground mb-4">
-                Minimum Order: {product.minOrderQuantity} {product.unit || 'units'}
+                Minimum Order: {product.minOrderQuantity}{' '}
+                {product.unit || 'units'}
               </p>
             )}
 
@@ -190,7 +290,10 @@ export default function ProductDetail() {
               >
                 Request Quote
               </Button>
-              <Link to="/contact" className="flex-1">
+              <Link
+                to="/contact"
+                className="flex-1"
+              >
                 <Button
                   size="lg"
                   variant="outline"
@@ -257,7 +360,10 @@ export default function ProductDetail() {
         )}
       </div>
 
-      <Dialog open={showQuoteForm} onOpenChange={setShowQuoteForm}>
+      <Dialog
+        open={showQuoteForm}
+        onOpenChange={setShowQuoteForm}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Request Quote for {product.name}</DialogTitle>

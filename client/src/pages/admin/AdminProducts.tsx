@@ -113,7 +113,8 @@ export default function AdminProducts() {
     error: productsError,
   } = useProducts(false); // Get all products including inactive
 
-  const { data: categories, isLoading: categoriesLoading } = useCategories(false);
+  const { data: categories, isLoading: categoriesLoading } =
+    useCategories(false);
 
   // Mutations
   const createProduct = useCreateProduct();
@@ -300,7 +301,9 @@ export default function AdminProducts() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: `Failed to ${editingProduct ? 'update' : 'create'} product`,
+        description: `Failed to ${
+          editingProduct ? 'update' : 'create'
+        } product`,
         variant: 'destructive',
       });
     }
@@ -316,7 +319,10 @@ export default function AdminProducts() {
           <h1 className="text-3xl font-bold mb-2">Products</h1>
           <p className="text-muted-foreground">Manage your product catalog</p>
         </div>
-        <Button onClick={handleAdd} data-testid="button-add-product">
+        <Button
+          onClick={handleAdd}
+          data-testid="button-add-product"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Product
         </Button>
@@ -335,7 +341,10 @@ export default function AdminProducts() {
                 data-testid="input-search-products"
               />
             </div>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <Select
+              value={filterCategory}
+              onValueChange={setFilterCategory}
+            >
               <SelectTrigger
                 className="w-[200px]"
                 data-testid="select-filter-category"
@@ -345,7 +354,10 @@ export default function AdminProducts() {
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {categories?.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
+                  <SelectItem
+                    key={cat.id}
+                    value={cat.id}
+                  >
                     {cat.name}
                   </SelectItem>
                 ))}
@@ -357,7 +369,10 @@ export default function AdminProducts() {
           {isLoading ? (
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full" />
+                <Skeleton
+                  key={i}
+                  className="h-16 w-full"
+                />
               ))}
             </div>
           ) : productsError ? (
@@ -395,7 +410,9 @@ export default function AdminProducts() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={product.isFeatured ? 'default' : 'secondary'}>
+                      <Badge
+                        variant={product.isFeatured ? 'default' : 'secondary'}
+                      >
                         {product.isFeatured ? 'Featured' : 'Regular'}
                       </Badge>
                     </TableCell>
@@ -445,7 +462,10 @@ export default function AdminProducts() {
       </Card>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <Dialog
+        open={showDialog}
+        onOpenChange={setShowDialog}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
@@ -478,7 +498,10 @@ export default function AdminProducts() {
                   </SelectTrigger>
                   <SelectContent>
                     {categories?.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
+                      <SelectItem
+                        key={cat.id}
+                        value={cat.id}
+                      >
                         {cat.name}
                       </SelectItem>
                     ))}
@@ -548,7 +571,15 @@ export default function AdminProducts() {
 
             {/* Image Upload */}
             <div className="space-y-2">
-              <Label>Images</Label>
+              <div className="flex items-center justify-between">
+                <Label>Product Images</Label>
+                {formData.imageUrls.length > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {formData.imageUrls.length} image
+                    {formData.imageUrls.length !== 1 ? 's' : ''} uploaded
+                  </span>
+                )}
+              </div>
               <div className="border-2 border-dashed border-border rounded-lg p-4">
                 <input
                   ref={fileInputRef}
@@ -559,49 +590,84 @@ export default function AdminProducts() {
                   className="hidden"
                   id="image-upload"
                 />
-                <label
-                  htmlFor="image-upload"
-                  className="flex flex-col items-center justify-center cursor-pointer py-4"
-                >
-                  {isUploading ? (
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  ) : (
-                    <>
-                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                      <span className="text-sm text-muted-foreground">
-                        Click to upload images (max 5MB each)
-                      </span>
-                    </>
-                  )}
-                </label>
-
-                {formData.imageUrls.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2 mt-4">
-                    {formData.imageUrls.map((url, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Product image ${index + 1}`}
-                          className="w-full aspect-square object-cover rounded"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                {formData.imageUrls.length === 0 ? (
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center cursor-pointer py-8 hover:bg-muted/50 rounded-lg transition-colors"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-2" />
+                        <span className="text-sm text-muted-foreground">
+                          Uploading images...
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                        <span className="text-sm font-medium text-foreground mb-1">
+                          Click to upload images
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          You can select multiple images at once (max 5MB each)
+                        </span>
+                      </>
+                    )}
+                  </label>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {formData.imageUrls.map((url, index) => (
+                        <div
+                          key={index}
+                          className="relative group"
                         >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {formData.imageUrls.length === 0 && (
-                  <div className="flex items-center justify-center py-4 text-muted-foreground">
-                    <ImageIcon className="h-12 w-12 opacity-50" />
+                          <div className="aspect-square rounded-lg overflow-hidden border border-border bg-muted">
+                            <img
+                              src={url}
+                              alt={`Product image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                            title="Remove image"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                          <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+                            {index + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <label
+                      htmlFor="image-upload"
+                      className="flex items-center justify-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors py-2 border border-border rounded-lg hover:bg-muted/50"
+                    >
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4" />
+                          <span>Add more images</span>
+                        </>
+                      )}
+                    </label>
                   </div>
                 )}
               </div>
+              {formData.imageUrls.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  First image will be used as the main product image. You can
+                  reorder by removing and re-uploading.
+                </p>
+              )}
             </div>
 
             <div className="flex items-center gap-6">
@@ -628,7 +694,10 @@ export default function AdminProducts() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowDialog(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -644,7 +713,10 @@ export default function AdminProducts() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={() => setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Product</AlertDialogTitle>
