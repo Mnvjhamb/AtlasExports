@@ -86,6 +86,24 @@ export default function ProductDetail() {
 
   const imageCount = images.length;
   const hasMultipleImages = imageCount > 1;
+  const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
+
+  // Preload all product images
+  useEffect(() => {
+    if (!images || images.length === 0) return;
+
+    images.forEach((imageUrl, index) => {
+      const img = new Image();
+      img.src = imageUrl;
+      img.onload = () => {
+        setImagesLoaded((prev) => ({ ...prev, [index]: true }));
+      };
+      img.onerror = () => {
+        // Mark as loaded even on error to avoid infinite loading state
+        setImagesLoaded((prev) => ({ ...prev, [index]: true }));
+      };
+    });
+  }, [images]);
 
   // Carousel navigation
   const nextImage = useCallback(() => {
@@ -189,10 +207,31 @@ export default function ProductDetail() {
                   transition={{ duration: 0.3, ease: 'easeInOut' }}
                   className="absolute inset-0"
                 >
+                  {!imagesLoaded[selectedImage] && (
+                    <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
+                      <div className="text-muted-foreground text-sm">
+                        Loading image...
+                      </div>
+                    </div>
+                  )}
                   <img
                     src={images[selectedImage]}
                     alt={product.name}
                     className="w-full h-full object-cover"
+                    loading={selectedImage === 0 ? 'eager' : 'lazy'}
+                    decoding={selectedImage === 0 ? 'sync' : 'async'}
+                    onLoad={() =>
+                      setImagesLoaded((prev) => ({
+                        ...prev,
+                        [selectedImage]: true,
+                      }))
+                    }
+                    style={{
+                      opacity: imagesLoaded[selectedImage] ? 1 : 0,
+                      transition: 'opacity 0.3s',
+                    }}
+                    // @ts-ignore - fetchPriority is a valid HTML attribute
+                    fetchPriority={selectedImage === 0 ? 'high' : 'auto'}
                   />
                 </motion.div>
               </AnimatePresence>
@@ -258,6 +297,10 @@ export default function ProductDetail() {
                       src={img}
                       alt={`${product.name} thumbnail ${index + 1}`}
                       className="w-full h-full object-cover"
+                      loading="lazy"
+                      onLoad={() =>
+                        setImagesLoaded((prev) => ({ ...prev, [index]: true }))
+                      }
                     />
                   </motion.button>
                 ))}

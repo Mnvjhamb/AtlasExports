@@ -3,24 +3,50 @@ import {
   uploadBytes,
   getDownloadURL,
   deleteObject,
+  updateMetadata,
+  getMetadata,
 } from 'firebase/storage';
 import { storage } from './firebase';
 
 /**
- * Upload a file to Firebase Storage
+ * Upload a file to Firebase Storage with optimized cache headers
  * @param file - The file to upload
  * @param path - The storage path (e.g., 'products/image.jpg')
+ * @param cacheControl - Cache control header (default: 'public, max-age=31536000' for 1 year)
  * @returns The download URL of the uploaded file
  */
-export async function uploadFile(file: File, path: string): Promise<string> {
+export async function uploadFile(
+  file: File,
+  path: string,
+  cacheControl: string = 'public, max-age=31536000, immutable'
+): Promise<string> {
   const storageRef = ref(storage, path);
-  const snapshot = await uploadBytes(storageRef, file);
+
+  // Upload with metadata for better caching
+  const metadata = {
+    contentType: file.type,
+    cacheControl: cacheControl,
+  };
+
+  const snapshot = await uploadBytes(storageRef, file, metadata);
+
+  // Update metadata to ensure cache headers are set
+  try {
+    await updateMetadata(snapshot.ref, {
+      cacheControl: cacheControl,
+      contentType: file.type,
+    });
+  } catch (error) {
+    // Metadata update is optional, continue even if it fails
+    console.warn('Failed to update metadata:', error);
+  }
+
   const downloadURL = await getDownloadURL(snapshot.ref);
   return downloadURL;
 }
 
 /**
- * Upload an image to a specific folder
+ * Upload an image to a specific folder with optimized caching
  * @param file - The image file
  * @param folder - The folder name (e.g., 'hero', 'products', 'categories')
  * @returns The download URL
@@ -32,7 +58,8 @@ export async function uploadImage(
   const timestamp = Date.now();
   const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
   const path = `${folder}/${timestamp}_${safeName}`;
-  return uploadFile(file, path);
+  // Images can be cached for a long time since they're immutable
+  return uploadFile(file, path, 'public, max-age=31536000, immutable');
 }
 
 /**
@@ -140,7 +167,7 @@ export function isValidFileSize(file: File, maxSizeMB = 5): boolean {
 }
 
 /**
- * Upload a video to a specific folder
+ * Upload a video to a specific folder with optimized caching
  * @param file - The video file
  * @param folder - The folder name (e.g., 'hero', 'videos')
  * @returns The download URL
@@ -152,5 +179,6 @@ export async function uploadVideo(
   const timestamp = Date.now();
   const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
   const path = `${folder}/${timestamp}_${safeName}`;
-  return uploadFile(file, path);
+  // Videos can be cached for a long time since they're immutable
+  return uploadFile(file, path, 'public, max-age=31536000, immutable');
 }

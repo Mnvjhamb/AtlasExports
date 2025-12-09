@@ -58,6 +58,7 @@ const defaultSlides: HeroSlide[] = [
 export default function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [mediaLoaded, setMediaLoaded] = useState<Record<number, boolean>>({});
   const { data: content, isLoading } = useSiteContent();
 
   // Use database slides or default slides
@@ -86,6 +87,58 @@ export default function HeroCarousel() {
       setCurrentSlide(0);
     }
   }, [slideCount, currentSlide]);
+
+  // Preload all images and videos
+  useEffect(() => {
+    if (!slides || slides.length === 0) return;
+
+    const preloadMedia = async () => {
+      const preloadPromises: Promise<void>[] = [];
+
+      slides.forEach((slide, index) => {
+        const isVideo = slide.mediaType === 'video' && slide.videoUrl;
+        const imageUrl =
+          slide.imageUrl || defaultImages[index % defaultImages.length];
+
+        if (isVideo && slide.videoUrl) {
+          // Preload video
+          const video = document.createElement('video');
+          video.preload = 'auto';
+          video.src = slide.videoUrl;
+          video.muted = true;
+          preloadPromises.push(
+            new Promise((resolve) => {
+              video.onloadeddata = () => {
+                setMediaLoaded((prev) => ({ ...prev, [index]: true }));
+                resolve();
+              };
+              video.onerror = () => resolve(); // Continue even if preload fails
+            })
+          );
+        } else if (imageUrl) {
+          // Preload image
+          const img = new Image();
+          img.src = imageUrl;
+          preloadPromises.push(
+            new Promise((resolve) => {
+              img.onload = () => {
+                setMediaLoaded((prev) => ({ ...prev, [index]: true }));
+                resolve();
+              };
+              img.onerror = () => resolve(); // Continue even if preload fails
+            })
+          );
+        }
+      });
+
+      // Start preloading but don't wait for all
+      Promise.all(preloadPromises).catch(() => {
+        // Silently handle errors
+      });
+    };
+
+    preloadMedia();
+  }, [slides]);
 
   if (isLoading) {
     return (
@@ -131,22 +184,55 @@ export default function HeroCarousel() {
               transition={{ duration: 0.4, ease: 'easeInOut' }}
             >
               {isVideo ? (
-                <video
-                  src={slide.videoUrl}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
+                <>
+                  {!mediaLoaded[index] && (
+                    <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
+                      <div className="text-muted-foreground">
+                        Loading video...
+                      </div>
+                    </div>
+                  )}
+                  <video
+                    src={slide.videoUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    className="w-full h-full object-cover"
+                    onLoadedData={() =>
+                      setMediaLoaded((prev) => ({ ...prev, [index]: true }))
+                    }
+                    onCanPlay={() =>
+                      setMediaLoaded((prev) => ({ ...prev, [index]: true }))
+                    }
+                    onLoadedMetadata={() =>
+                      setMediaLoaded((prev) => ({ ...prev, [index]: true }))
+                    }
+                    style={{
+                      opacity: mediaLoaded[index] ? 1 : 0,
+                      transition: 'opacity 0.3s',
+                    }}
+                    // @ts-ignore - fetchPriority is a valid HTML attribute
+                    fetchPriority={index === 0 ? 'high' : 'auto'}
+                  />
+                </>
               ) : (
                 <motion.img
                   src={imageUrl}
                   alt={slide.title}
                   className="w-full h-full object-cover"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  decoding={index === 0 ? 'sync' : 'async'}
                   initial={{ scale: 1.1 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 8, ease: 'linear' }}
+                  onLoad={() =>
+                    setMediaLoaded((prev) => ({ ...prev, [index]: true }))
+                  }
+                  style={{ opacity: mediaLoaded[index] !== false ? 1 : 0 }}
+                  // @ts-ignore - fetchPriority is a valid HTML attribute
+                  fetchPriority={index === 0 ? 'high' : 'auto'}
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-primary/20 to-primary/5" />
@@ -227,32 +313,36 @@ export default function HeroCarousel() {
       {slideCount > 1 && (
         <div className="absolute inset-0 z-20 pointer-events-none">
           {/* Left Arrow */}
-          <motion.button
-            type="button"
-            className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-auto bg-black/30 backdrop-blur text-white hover:bg-black/50 rounded-full h-12 w-12 flex items-center justify-center"
-            onClick={prevSlide}
-            data-testid="button-carousel-prev"
-            whileHover={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-            whileTap={{ scale: 0.95 }}
-            style={{ transformOrigin: 'center' }}
-            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-          >
-            <ChevronLeft className="h-8 w-8" />
-          </motion.button>
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-auto">
+            <motion.button
+              type="button"
+              className="bg-black/30 backdrop-blur text-white hover:bg-black/50 rounded-full h-12 w-12 flex items-center justify-center"
+              onClick={prevSlide}
+              data-testid="button-carousel-prev"
+              whileHover={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+              whileTap={{ scale: 0.95 }}
+              style={{ transformOrigin: 'center' }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+            >
+              <ChevronLeft className="h-8 w-8" />
+            </motion.button>
+          </div>
 
           {/* Right Arrow */}
-          <motion.button
-            type="button"
-            className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto bg-black/30 backdrop-blur text-white hover:bg-black/50 rounded-full h-12 w-12 flex items-center justify-center"
-            onClick={nextSlide}
-            data-testid="button-carousel-next"
-            whileHover={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-            whileTap={{ scale: 0.95 }}
-            style={{ transformOrigin: 'center' }}
-            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-          >
-            <ChevronRight className="h-8 w-8" />
-          </motion.button>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto">
+            <motion.button
+              type="button"
+              className="bg-black/30 backdrop-blur text-white hover:bg-black/50 rounded-full h-12 w-12 flex items-center justify-center"
+              onClick={nextSlide}
+              data-testid="button-carousel-next"
+              whileHover={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+              whileTap={{ scale: 0.95 }}
+              style={{ transformOrigin: 'center' }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+            >
+              <ChevronRight className="h-8 w-8" />
+            </motion.button>
+          </div>
 
           {/* Dots */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 pointer-events-auto">
