@@ -637,8 +637,8 @@ export default function ProductDetail() {
         open={showImageModal}
         onOpenChange={setShowImageModal}
       >
-        <DialogContent className="max-w-[95vw] w-full h-[90vh] p-0 gap-0 bg-black/95 border-none sm:rounded-lg [&>button]:hidden">
-          <div className="relative w-full h-full flex items-center justify-center">
+        <DialogContent className="max-w-7xl w-[95vw] h-[90vh] max-h-[90vh] p-0 gap-0 bg-black/95 border-none sm:rounded-lg [&>button]:hidden overflow-hidden flex flex-col">
+          <div className="relative flex-1 flex items-center justify-center min-h-0 pb-20">
             {/* Close Button */}
             <button
               onClick={() => setShowImageModal(false)}
@@ -666,13 +666,25 @@ export default function ProductDetail() {
                     loop
                     muted
                     playsInline
-                    className="max-w-full max-h-full object-contain"
+                    className="max-w-full max-h-full w-auto h-auto object-contain"
+                    style={{
+                      maxWidth: 'min(100%, 1200px)',
+                      maxHeight: 'calc(90vh - 140px)',
+                      width: 'auto',
+                      height: 'auto',
+                    }}
                   />
                 ) : (
                   <img
                     src={displayMedia[modalSelectedImage]?.url || equipmentImg}
                     alt={`${product.name} - Image ${modalSelectedImage + 1}`}
-                    className="max-w-full max-h-full object-contain"
+                    className="max-w-full max-h-full w-auto h-auto object-contain"
+                    style={{
+                      maxWidth: 'min(100%, 1200px)',
+                      maxHeight: 'calc(90vh - 140px)',
+                      width: 'auto',
+                      height: 'auto',
+                    }}
                   />
                 )}
               </motion.div>
