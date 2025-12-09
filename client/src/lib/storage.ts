@@ -118,6 +118,20 @@ export function isValidImageFile(file: File): boolean {
 }
 
 /**
+ * Validate file is a video
+ */
+export function isValidVideoFile(file: File): boolean {
+  const validTypes = [
+    'video/mp4',
+    'video/webm',
+    'video/ogg',
+    'video/quicktime',
+    'video/x-msvideo',
+  ];
+  return validTypes.includes(file.type);
+}
+
+/**
  * Validate file size (default max 5MB)
  */
 export function isValidFileSize(file: File, maxSizeMB = 5): boolean {
@@ -125,3 +139,18 @@ export function isValidFileSize(file: File, maxSizeMB = 5): boolean {
   return file.size <= maxSizeBytes;
 }
 
+/**
+ * Upload a video to a specific folder
+ * @param file - The video file
+ * @param folder - The folder name (e.g., 'hero', 'videos')
+ * @returns The download URL
+ */
+export async function uploadVideo(
+  file: File,
+  folder: string = 'videos'
+): Promise<string> {
+  const timestamp = Date.now();
+  const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const path = `${folder}/${timestamp}_${safeName}`;
+  return uploadFile(file, path);
+}

@@ -57,7 +57,13 @@ import {
   type TeamMember,
   type WhyChooseUsItem,
 } from '@/hooks/useContent';
-import { uploadImage, isValidImageFile, isValidFileSize } from '@/lib/storage';
+import {
+  uploadImage,
+  uploadVideo,
+  isValidImageFile,
+  isValidVideoFile,
+  isValidFileSize,
+} from '@/lib/storage';
 
 const iconOptions = [
   'Award',
@@ -188,6 +194,8 @@ export default function AdminContent() {
       title: 'New Slide',
       subtitle: 'Enter subtitle here',
       imageUrl: '',
+      videoUrl: '',
+      mediaType: 'image',
       order: content.heroSlides.length + 1,
     };
     setContent((prev) => ({
@@ -248,11 +256,54 @@ export default function AdminContent() {
     try {
       const url = await uploadImage(file, 'hero');
       handleSlideChange(slideId, 'imageUrl', url);
+      handleSlideChange(slideId, 'mediaType', 'image');
       toast({ title: 'Image uploaded' });
     } catch (error) {
       toast({
         title: 'Upload failed',
         description: 'Failed to upload image',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingSlide(null);
+    }
+  };
+
+  const handleSlideVideoUpload = async (
+    slideId: string,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!isValidVideoFile(file)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please upload a valid video file (MP4, WebM, etc.)',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!isValidFileSize(file, 50)) {
+      toast({
+        title: 'File too large',
+        description: 'Video must be less than 50MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadingSlide(slideId);
+    try {
+      const url = await uploadVideo(file, 'hero');
+      handleSlideChange(slideId, 'videoUrl', url);
+      handleSlideChange(slideId, 'mediaType', 'video');
+      toast({ title: 'Video uploaded' });
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description: 'Failed to upload video',
         variant: 'destructive',
       });
     } finally {
@@ -1070,50 +1121,136 @@ export default function AdminContent() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label>Background Image</Label>
+                      <Label>Media Type</Label>
+                      <Select
+                        value={slide.mediaType || 'image'}
+                        onValueChange={(value: 'image' | 'video') =>
+                          handleSlideChange(slide.id, 'mediaType', value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="image">Image</SelectItem>
+                          <SelectItem value="video">Video</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>
+                        {slide.mediaType === 'video'
+                          ? 'Background Video'
+                          : 'Background Image'}
+                      </Label>
                       <div className="border-2 border-dashed rounded-lg p-4 h-[140px] flex items-center justify-center">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleSlideImageUpload(slide.id, e)}
-                          className="hidden"
-                          id={`slide-image-${slide.id}`}
-                        />
-                        {slide.imageUrl ? (
-                          <div className="relative w-full h-full">
-                            <img
-                              src={slide.imageUrl}
-                              alt={slide.title}
-                              className="w-full h-full object-cover rounded"
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleSlideChange(slide.id, 'imageUrl', '')
+                        {slide.mediaType === 'video' ? (
+                          <>
+                            <input
+                              type="file"
+                              accept="video/*"
+                              onChange={(e) =>
+                                handleSlideVideoUpload(slide.id, e)
                               }
-                              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </div>
-                        ) : (
-                          <label
-                            htmlFor={`slide-image-${slide.id}`}
-                            className="flex flex-col items-center cursor-pointer text-muted-foreground"
-                          >
-                            {uploadingSlide === slide.id ? (
-                              <Loader2 className="h-8 w-8 animate-spin" />
+                              className="hidden"
+                              id={`slide-video-${slide.id}`}
+                            />
+                            {slide.videoUrl ? (
+                              <div className="relative w-full h-full">
+                                <video
+                                  src={slide.videoUrl}
+                                  className="w-full h-full object-cover rounded"
+                                  muted
+                                  playsInline
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleSlideChange(slide.id, 'videoUrl', '');
+                                    handleSlideChange(
+                                      slide.id,
+                                      'mediaType',
+                                      'image'
+                                    );
+                                  }}
+                                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
                             ) : (
-                              <>
-                                <Upload className="h-8 w-8 mb-2" />
-                                <span className="text-sm">Upload Image</span>
-                              </>
+                              <label
+                                htmlFor={`slide-video-${slide.id}`}
+                                className="flex flex-col items-center cursor-pointer text-muted-foreground"
+                              >
+                                {uploadingSlide === slide.id ? (
+                                  <Loader2 className="h-8 w-8 animate-spin" />
+                                ) : (
+                                  <>
+                                    <Upload className="h-8 w-8 mb-2" />
+                                    <span className="text-sm">
+                                      Upload Video
+                                    </span>
+                                    <span className="text-xs mt-1">
+                                      (MP4, WebM, max 50MB)
+                                    </span>
+                                  </>
+                                )}
+                              </label>
                             )}
-                          </label>
+                          </>
+                        ) : (
+                          <>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) =>
+                                handleSlideImageUpload(slide.id, e)
+                              }
+                              className="hidden"
+                              id={`slide-image-${slide.id}`}
+                            />
+                            {slide.imageUrl ? (
+                              <div className="relative w-full h-full">
+                                <img
+                                  src={slide.imageUrl}
+                                  alt={slide.title}
+                                  className="w-full h-full object-cover rounded"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleSlideChange(slide.id, 'imageUrl', '')
+                                  }
+                                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <label
+                                htmlFor={`slide-image-${slide.id}`}
+                                className="flex flex-col items-center cursor-pointer text-muted-foreground"
+                              >
+                                {uploadingSlide === slide.id ? (
+                                  <Loader2 className="h-8 w-8 animate-spin" />
+                                ) : (
+                                  <>
+                                    <Upload className="h-8 w-8 mb-2" />
+                                    <span className="text-sm">
+                                      Upload Image
+                                    </span>
+                                  </>
+                                )}
+                              </label>
+                            )}
+                          </>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Leave empty to use default images
+                        {slide.mediaType === 'video'
+                          ? 'Upload a video file (MP4, WebM, max 50MB)'
+                          : 'Leave empty to use default images'}
                       </p>
                     </div>
                   </div>

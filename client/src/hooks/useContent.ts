@@ -10,6 +10,8 @@ export interface HeroSlide {
   title: string;
   subtitle: string;
   imageUrl: string;
+  videoUrl?: string;
+  mediaType?: 'image' | 'video';
   order: number;
 }
 
@@ -251,6 +253,8 @@ Our headquarters in Ludhiana, the industrial hub of Punjab, gives us direct acce
       subtitle:
         'Delivering quality agricultural equipment and commodities to the world',
       imageUrl: '',
+      videoUrl: '',
+      mediaType: 'image',
       order: 1,
     },
     {
@@ -258,6 +262,8 @@ Our headquarters in Ludhiana, the industrial hub of Punjab, gives us direct acce
       title: 'Global Logistics Excellence',
       subtitle: 'Efficient shipping and handling for all your export needs',
       imageUrl: '',
+      videoUrl: '',
+      mediaType: 'image',
       order: 2,
     },
     {
@@ -265,6 +271,8 @@ Our headquarters in Ludhiana, the industrial hub of Punjab, gives us direct acce
       title: 'Finest Basmati Rice',
       subtitle: 'Premium quality rice from the heartland of Punjab',
       imageUrl: '',
+      videoUrl: '',
+      mediaType: 'image',
       order: 3,
     },
     {
@@ -272,6 +280,8 @@ Our headquarters in Ludhiana, the industrial hub of Punjab, gives us direct acce
       title: 'Your Trusted Partner',
       subtitle: 'Building long-term relationships with businesses worldwide',
       imageUrl: '',
+      videoUrl: '',
+      mediaType: 'image',
       order: 4,
     },
   ],

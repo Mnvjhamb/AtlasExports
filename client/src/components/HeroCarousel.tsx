@@ -22,6 +22,8 @@ const defaultSlides: HeroSlide[] = [
     subtitle:
       'Delivering quality agricultural equipment and commodities to the world',
     imageUrl: '',
+    videoUrl: '',
+    mediaType: 'image',
     order: 1,
   },
   {
@@ -29,6 +31,8 @@ const defaultSlides: HeroSlide[] = [
     title: 'Global Logistics Excellence',
     subtitle: 'Efficient shipping and handling for all your export needs',
     imageUrl: '',
+    videoUrl: '',
+    mediaType: 'image',
     order: 2,
   },
   {
@@ -36,6 +40,8 @@ const defaultSlides: HeroSlide[] = [
     title: 'Finest Basmati Rice',
     subtitle: 'Premium quality rice from the heartland of Punjab',
     imageUrl: '',
+    videoUrl: '',
+    mediaType: 'image',
     order: 3,
   },
   {
@@ -43,6 +49,8 @@ const defaultSlides: HeroSlide[] = [
     title: 'Your Trusted Partner',
     subtitle: 'Building long-term relationships with businesses worldwide',
     imageUrl: '',
+    videoUrl: '',
+    mediaType: 'image',
     order: 4,
   },
 ];
@@ -107,6 +115,8 @@ export default function HeroCarousel() {
       <AnimatePresence mode="wait">
         {slides.map((slide, index) => {
           if (index !== currentSlide) return null;
+
+          const isVideo = slide.mediaType === 'video' && slide.videoUrl;
           // Use custom image if available, otherwise use default
           const imageUrl =
             slide.imageUrl || defaultImages[index % defaultImages.length];
@@ -120,14 +130,25 @@ export default function HeroCarousel() {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
             >
-              <motion.img
-                src={imageUrl}
-                alt={slide.title}
-                className="w-full h-full object-cover"
-                initial={{ scale: 1.1 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 8, ease: 'linear' }}
-              />
+              {isVideo ? (
+                <video
+                  src={slide.videoUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <motion.img
+                  src={imageUrl}
+                  alt={slide.title}
+                  className="w-full h-full object-cover"
+                  initial={{ scale: 1.1 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 8, ease: 'linear' }}
+                />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-primary/20 to-primary/5" />
             </motion.div>
           );
