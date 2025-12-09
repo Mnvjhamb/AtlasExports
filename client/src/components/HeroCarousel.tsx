@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -60,6 +60,9 @@ export default function HeroCarousel() {
   const [isPaused, setIsPaused] = useState(false);
   const [mediaLoaded, setMediaLoaded] = useState<Record<number, boolean>>({});
   const { data: content, isLoading } = useSiteContent();
+  const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
+  const preloadTimeouts = useRef<Record<number, NodeJS.Timeout>>({});
+  const preloadVideoElements = useRef<Record<number, HTMLVideoElement>>({});
 
   // Use database slides or default slides, sorted by order
   const slides = content?.heroSlides?.length
@@ -77,7 +80,7 @@ export default function HeroCarousel() {
 
   useEffect(() => {
     if (isPaused || slideCount <= 1) return;
-    const interval = setInterval(nextSlide, 5000);
+    const interval = setInterval(nextSlide, 8000); // 8 seconds for better viewing time
     return () => clearInterval(interval);
   }, [isPaused, nextSlide, slideCount]);
 
@@ -88,57 +91,114 @@ export default function HeroCarousel() {
     }
   }, [slideCount, currentSlide]);
 
-  // Preload all images and videos
+  // Cleanup videos when switching slides
+  useEffect(() => {
+    // Calculate which slides should keep their videos (current and adjacent)
+    const keepIndices = new Set<number>([currentSlide]);
+    if (slideCount > 1) {
+      keepIndices.add((currentSlide + 1) % slideCount);
+      keepIndices.add((currentSlide - 1 + slideCount) % slideCount);
+    }
+
+    // Only pause video elements that are not current - don't destroy DOM elements
+    Object.entries(videoRefs.current).forEach(([indexStr, video]) => {
+      const index = parseInt(indexStr, 10);
+      if (video && index !== currentSlide) {
+        // Pause but don't destroy - let React handle DOM cleanup
+        video.pause();
+        video.currentTime = 0;
+      }
+    });
+
+    // Clean up preload video elements (not DOM elements) that are no longer needed
+    Object.entries(preloadVideoElements.current).forEach(
+      ([indexStr, video]) => {
+        const index = parseInt(indexStr, 10);
+        if (!keepIndices.has(index)) {
+          video.src = '';
+          video.load();
+          delete preloadVideoElements.current[index];
+        }
+      }
+    );
+  }, [currentSlide, slideCount]);
+
+  // Cleanup all videos on unmount
+  useEffect(() => {
+    return () => {
+      // Clean up all video refs
+      Object.values(videoRefs.current).forEach((video) => {
+        if (video) {
+          video.pause();
+          video.src = '';
+          video.load(); // Reset video element
+        }
+      });
+      videoRefs.current = {};
+
+      // Clean up all preload video elements
+      Object.values(preloadVideoElements.current).forEach((video) => {
+        if (video) {
+          video.src = '';
+          video.load();
+        }
+      });
+      preloadVideoElements.current = {};
+
+      // Clear all timeouts
+      Object.values(preloadTimeouts.current).forEach(clearTimeout);
+      preloadTimeouts.current = {};
+    };
+  }, []);
+
+  // Optimized media preloading - only preload current, next, and previous slides
   useEffect(() => {
     if (!slides || slides.length === 0) return;
 
     const preloadMedia = async () => {
-      const preloadPromises: Promise<void>[] = [];
+      // Clear any pending preload timeouts
+      Object.values(preloadTimeouts.current).forEach(clearTimeout);
+      preloadTimeouts.current = {};
 
-      slides.forEach((slide, index) => {
+      // Calculate which slides to preload (current, next, previous)
+      const indicesToPreload = new Set<number>([currentSlide]);
+      if (slideCount > 1) {
+        indicesToPreload.add((currentSlide + 1) % slideCount);
+        indicesToPreload.add((currentSlide - 1 + slideCount) % slideCount);
+      }
+
+      indicesToPreload.forEach((index) => {
+        const slide = slides[index];
+        if (!slide) return;
+
         const isVideo = slide.mediaType === 'video' && slide.videoUrl;
         const imageUrl =
           slide.imageUrl || defaultImages[index % defaultImages.length];
 
-        if (isVideo && slide.videoUrl) {
-          // Preload video
-          const video = document.createElement('video');
-          video.preload = 'auto';
-          video.src = slide.videoUrl;
-          video.muted = true;
-          preloadPromises.push(
-            new Promise((resolve) => {
-              video.onloadeddata = () => {
-                setMediaLoaded((prev) => ({ ...prev, [index]: true }));
-                resolve();
-              };
-              video.onerror = () => resolve(); // Continue even if preload fails
-            })
-          );
-        } else if (imageUrl) {
-          // Preload image
+        // Don't preload videos - let them load when rendered in DOM to avoid WebMediaPlayer issues
+        // Only preload images
+        if (!isVideo && imageUrl) {
+          // Preload image immediately
           const img = new Image();
           img.src = imageUrl;
-          preloadPromises.push(
-            new Promise((resolve) => {
-              img.onload = () => {
-                setMediaLoaded((prev) => ({ ...prev, [index]: true }));
-                resolve();
-              };
-              img.onerror = () => resolve(); // Continue even if preload fails
-            })
-          );
+          img.onload = () => {
+            setMediaLoaded((prev) => ({ ...prev, [index]: true }));
+          };
+          img.onerror = () => {
+            setMediaLoaded((prev) => ({ ...prev, [index]: true }));
+          };
         }
-      });
-
-      // Start preloading but don't wait for all
-      Promise.all(preloadPromises).catch(() => {
-        // Silently handle errors
       });
     };
 
     preloadMedia();
-  }, [slides]);
+
+    // Cleanup function
+    return () => {
+      Object.values(preloadTimeouts.current).forEach(clearTimeout);
+      preloadTimeouts.current = {};
+    };
+  }, [slides, currentSlide, slideCount]);
 
   if (isLoading) {
     return (
@@ -193,12 +253,21 @@ export default function HeroCarousel() {
                     </div>
                   )}
                   <video
+                    ref={(el) => {
+                      if (el) {
+                        videoRefs.current[index] = el;
+                      } else {
+                        // Just remove from refs when element is removed from DOM
+                        // Don't destroy it here - React will handle cleanup
+                        delete videoRefs.current[index];
+                      }
+                    }}
                     src={slide.videoUrl}
                     autoPlay
                     loop
                     muted
                     playsInline
-                    preload="auto"
+                    preload="metadata"
                     className="w-full h-full object-cover"
                     onLoadedData={() =>
                       setMediaLoaded((prev) => ({ ...prev, [index]: true }))
@@ -209,12 +278,19 @@ export default function HeroCarousel() {
                     onLoadedMetadata={() =>
                       setMediaLoaded((prev) => ({ ...prev, [index]: true }))
                     }
+                    onPlay={() => {
+                      // Ensure video plays smoothly
+                      const video = videoRefs.current[index];
+                      if (video) {
+                        video.play().catch(() => {
+                          // Autoplay failed, but that's okay
+                        });
+                      }
+                    }}
                     style={{
                       opacity: mediaLoaded[index] ? 1 : 0,
                       transition: 'opacity 0.3s',
                     }}
-                    // @ts-ignore - fetchPriority is a valid HTML attribute
-                    fetchPriority={index === 0 ? 'high' : 'auto'}
                   />
                 </>
               ) : (
@@ -231,8 +307,7 @@ export default function HeroCarousel() {
                     setMediaLoaded((prev) => ({ ...prev, [index]: true }))
                   }
                   style={{ opacity: mediaLoaded[index] !== false ? 1 : 0 }}
-                  // @ts-ignore - fetchPriority is a valid HTML attribute
-                  fetchPriority={index === 0 ? 'high' : 'auto'}
+                  {...({ fetchpriority: index === 0 ? 'high' : 'auto' } as any)}
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-primary/20 to-primary/5" />
