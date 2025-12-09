@@ -63,7 +63,7 @@ export default function CategoryCard({
               transition={{ duration: 0.2, delay: index * 0.05 + 0.1 }}
             >
               <h3 className="font-semibold text-lg mb-1">{name}</h3>
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <span className="text-sm text-white/80">
                   {productCount} Products
                 </span>
@@ -73,7 +73,7 @@ export default function CategoryCard({
                 >
                   <ChevronRight className="h-5 w-5" />
                 </motion.div>
-              </div>
+              </div> */}
             </motion.div>
           </motion.div>
         </Card>
