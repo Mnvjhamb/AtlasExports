@@ -21,8 +21,7 @@ export default function CategoryCard({
   return (
     <motion.div
       initial={{ opacity: 0, y: 50, scale: 0.95 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: '-50px' }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{
         duration: 0.6,
         delay: index * 0.1,
@@ -57,9 +56,8 @@ export default function CategoryCard({
             <motion.div
               className="absolute bottom-0 left-0 right-0 p-4 text-white"
               initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
+              animate={{ y: 0, opacity: 1 }}
               whileHover={{ y: -5 }}
-              viewport={{ once: true }}
               transition={{ duration: 0.2, delay: index * 0.05 + 0.1 }}
             >
               <h3 className="font-semibold text-lg mb-1">{name}</h3>

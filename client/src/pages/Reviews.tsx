@@ -84,8 +84,7 @@ export default function Reviews() {
               <motion.h2
                 className="text-2xl font-bold mb-8"
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
               >
                 What Our Clients Say
               </motion.h2>
@@ -136,8 +135,7 @@ export default function Reviews() {
               <div className="lg:sticky lg:top-24">
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5 }}
                 >
                   <ReviewForm />

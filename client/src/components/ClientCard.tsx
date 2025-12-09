@@ -19,8 +19,7 @@ export default function ClientCard({
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8, y: 30 }}
-      whileInView={{ opacity: 1, scale: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{
         duration: 0.3,
         delay: index * 0.05,
@@ -51,8 +50,7 @@ export default function ClientCard({
           <motion.div
             className="min-w-0"
             initial={{ opacity: 0, x: -10 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.2, delay: index * 0.05 + 0.1 }}
           >
             <motion.div
@@ -65,8 +63,7 @@ export default function ClientCard({
             <motion.div
               className="text-sm text-muted-foreground truncate"
               initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.2, delay: index * 0.05 + 0.15 }}
             >
               {country}

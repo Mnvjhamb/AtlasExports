@@ -28,8 +28,7 @@ export default function ProductCard({
   return (
     <motion.div
       initial={{ opacity: 0, y: 50, scale: 0.95 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: '-50px' }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{
         duration: 0.6,
         delay: index * 0.1,
@@ -87,7 +86,7 @@ export default function ProductCard({
           <motion.h3
             className="font-semibold text-lg mb-2 line-clamp-1"
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: index * 0.05 + 0.1 }}
           >
             {title}
@@ -95,7 +94,7 @@ export default function ProductCard({
           <motion.p
             className="text-sm text-muted-foreground mb-4 line-clamp-2"
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: index * 0.05 + 0.15 }}
           >
             {description}
@@ -103,7 +102,7 @@ export default function ProductCard({
           <motion.div
             className="flex gap-2"
             initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 + 0.2 }}
           >
             <Link

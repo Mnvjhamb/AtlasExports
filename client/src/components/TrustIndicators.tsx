@@ -30,8 +30,7 @@ export default function TrustIndicators() {
               key={index}
               className="text-center"
               initial={{ opacity: 0, y: 50, scale: 0.8 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, margin: '-100px' }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{
                 duration: 0.3,
                 delay: index * 0.08,
@@ -45,8 +44,7 @@ export default function TrustIndicators() {
             >
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
-                whileInView={{ scale: 1, rotate: 0 }}
-                viewport={{ once: true }}
+                animate={{ scale: 1, rotate: 0 }}
                 transition={{
                   duration: 0.4,
                   delay: index * 0.08 + 0.1,
@@ -63,8 +61,7 @@ export default function TrustIndicators() {
               <motion.div
                 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2"
                 initial={{ opacity: 0, scale: 0.5 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{
                   duration: 0.25,
                   delay: index * 0.08 + 0.2,
@@ -77,8 +74,7 @@ export default function TrustIndicators() {
               <motion.div
                 className="text-base md:text-lg opacity-90 font-medium"
                 initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 0.9, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 0.9, y: 0 }}
                 transition={{ duration: 0.25, delay: index * 0.08 + 0.3 }}
               >
                 {item.label}

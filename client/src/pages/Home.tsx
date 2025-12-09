@@ -91,15 +91,13 @@ export default function Home() {
           <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
           >
             <motion.h2
               className="text-4xl md:text-5xl font-bold mb-6 text-foreground"
               initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
               {home?.categoriesTitle || 'Our Product Categories'}
@@ -107,8 +105,7 @@ export default function Home() {
             <motion.p
               className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.2 }}
             >
               {home?.categoriesSubtitle ||
@@ -155,21 +152,18 @@ export default function Home() {
           <motion.div
             className="flex items-center justify-between mb-16 flex-wrap gap-4"
             initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
           >
             <motion.div
               initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
               <motion.h2
                 className="text-4xl md:text-5xl font-bold mb-4 text-foreground"
                 initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.25 }}
               >
                 {home?.featuredProductsTitle || 'Featured Products'}
@@ -177,8 +171,7 @@ export default function Home() {
               <motion.p
                 className="text-lg text-muted-foreground max-w-2xl"
                 initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, delay: 0.15 }}
               >
                 {home?.featuredProductsSubtitle ||
@@ -234,8 +227,7 @@ export default function Home() {
           <motion.div
             className="mt-8 text-center sm:hidden"
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1 }}
           >
             <Link to="/products">
               <Button data-testid="button-view-all-products-mobile">
@@ -292,15 +284,13 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div
               initial={{ opacity: 0, x: -50, scale: 0.95 }}
-              whileInView={{ opacity: 1, x: 0, scale: 1 }}
-              viewport={{ once: true, margin: '-100px' }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
             >
               <motion.h2
                 className="text-4xl md:text-5xl font-bold mb-6 text-foreground leading-tight"
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
               >
                 {home?.ctaTitle ||
@@ -309,8 +299,7 @@ export default function Home() {
               <motion.p
                 className="text-lg text-muted-foreground mb-8 leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
                 {home?.ctaDescription ||
@@ -329,16 +318,14 @@ export default function Home() {
                     key={index}
                     className="flex items-center gap-2"
                     initial={{ opacity: 0, x: -30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.25, delay: index * 0.08 }}
                     whileHover={{ x: 5 }}
                   >
                     <motion.div
                       className="h-2 w-2 rounded-full bg-primary"
                       initial={{ scale: 0 }}
-                      whileInView={{ scale: 1 }}
-                      viewport={{ once: true }}
+                      animate={{ scale: 1 }}
                       transition={{ duration: 0.3, delay: index * 0.15 + 0.2 }}
                       whileHover={{ scale: 1.5 }}
                     />
@@ -349,8 +336,7 @@ export default function Home() {
               <motion.div
                 className="flex flex-col sm:flex-row gap-4"
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
               >
                 <Link to="/contact">
@@ -385,8 +371,7 @@ export default function Home() {
             <motion.div
               className="relative"
               initial={{ opacity: 0, x: 50, scale: 0.9 }}
-              whileInView={{ opacity: 1, x: 0, scale: 1 }}
-              viewport={{ once: true, margin: '-100px' }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
             >
               <motion.img
