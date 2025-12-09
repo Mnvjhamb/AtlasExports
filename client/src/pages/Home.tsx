@@ -217,6 +217,9 @@ export default function Home() {
                   category={product.categoryId}
                   description={product.description}
                   imageUrl={product.imageUrls?.[0] || equipmentImg}
+                  hasVideo={
+                    !!(product.videoUrls && product.videoUrls.length > 0)
+                  }
                   index={index}
                   onRequestQuote={handleRequestQuote}
                 />

@@ -218,22 +218,22 @@ export default function HeroCarousel() {
                   />
                 </>
               ) : (
-                <motion.img
-                  src={imageUrl}
-                  alt={slide.title}
-                  className="w-full h-full object-cover"
+              <motion.img
+                src={imageUrl}
+                alt={slide.title}
+                className="w-full h-full object-cover"
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding={index === 0 ? 'sync' : 'async'}
-                  initial={{ scale: 1.1 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 8, ease: 'linear' }}
+                initial={{ scale: 1.1 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 8, ease: 'linear' }}
                   onLoad={() =>
                     setMediaLoaded((prev) => ({ ...prev, [index]: true }))
                   }
                   style={{ opacity: mediaLoaded[index] !== false ? 1 : 0 }}
                   // @ts-ignore - fetchPriority is a valid HTML attribute
                   fetchPriority={index === 0 ? 'high' : 'auto'}
-                />
+              />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-primary/20 to-primary/5" />
             </motion.div>
@@ -314,34 +314,34 @@ export default function HeroCarousel() {
         <div className="absolute inset-0 z-20 pointer-events-none">
           {/* Left Arrow */}
           <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-auto">
-            <motion.button
-              type="button"
+          <motion.button
+            type="button"
               className="bg-black/30 backdrop-blur text-white hover:bg-black/50 rounded-full h-12 w-12 flex items-center justify-center"
-              onClick={prevSlide}
-              data-testid="button-carousel-prev"
-              whileHover={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-              whileTap={{ scale: 0.95 }}
-              style={{ transformOrigin: 'center' }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            >
-              <ChevronLeft className="h-8 w-8" />
-            </motion.button>
+            onClick={prevSlide}
+            data-testid="button-carousel-prev"
+            whileHover={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            whileTap={{ scale: 0.95 }}
+            style={{ transformOrigin: 'center' }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+          >
+            <ChevronLeft className="h-8 w-8" />
+          </motion.button>
           </div>
 
           {/* Right Arrow */}
           <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto">
-            <motion.button
-              type="button"
+          <motion.button
+            type="button"
               className="bg-black/30 backdrop-blur text-white hover:bg-black/50 rounded-full h-12 w-12 flex items-center justify-center"
-              onClick={nextSlide}
-              data-testid="button-carousel-next"
-              whileHover={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-              whileTap={{ scale: 0.95 }}
-              style={{ transformOrigin: 'center' }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            >
-              <ChevronRight className="h-8 w-8" />
-            </motion.button>
+            onClick={nextSlide}
+            data-testid="button-carousel-next"
+            whileHover={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            whileTap={{ scale: 0.95 }}
+            style={{ transformOrigin: 'center' }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+          >
+            <ChevronRight className="h-8 w-8" />
+          </motion.button>
           </div>
 
           {/* Dots */}

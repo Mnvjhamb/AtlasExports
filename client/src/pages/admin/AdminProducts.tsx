@@ -61,7 +61,9 @@ import {
 } from '@/hooks/useProducts';
 import {
   uploadProductImage,
+  uploadVideo,
   isValidImageFile,
+  isValidVideoFile,
   isValidFileSize,
 } from '@/lib/storage';
 import type { Product } from '@/lib/firestore';
@@ -79,6 +81,7 @@ interface ProductFormData {
   isFeatured: boolean;
   isActive: boolean;
   imageUrls: string[];
+  videoUrls: string[];
 }
 
 const initialFormData: ProductFormData = {
@@ -91,6 +94,7 @@ const initialFormData: ProductFormData = {
   isFeatured: false,
   isActive: true,
   imageUrls: [],
+  videoUrls: [],
 };
 
 export default function AdminProducts() {
@@ -104,6 +108,7 @@ export default function AdminProducts() {
   const [isUploading, setIsUploading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Fetch data
@@ -183,6 +188,7 @@ export default function AdminProducts() {
       isFeatured: product.isFeatured || false,
       isActive: product.isActive,
       imageUrls: product.imageUrls || [],
+      videoUrls: product.videoUrls || [],
     });
     setShowDialog(true);
   };
@@ -252,6 +258,65 @@ export default function AdminProducts() {
     }));
   };
 
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const validFiles: File[] = [];
+    for (const file of Array.from(files)) {
+      if (!isValidVideoFile(file)) {
+        toast({
+          title: 'Invalid file type',
+          description: `${file.name} is not a valid video file`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+      if (!isValidFileSize(file, 50)) {
+        toast({
+          title: 'File too large',
+          description: `${file.name} exceeds 50MB limit`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      const uploadPromises = validFiles.map((file) =>
+        uploadVideo(file, `products/${editingProduct?.id || 'temp'}`)
+      );
+      const urls = await Promise.all(uploadPromises);
+      setFormData((prev) => ({
+        ...prev,
+        videoUrls: [...prev.videoUrls, ...urls],
+      }));
+      toast({ title: `${urls.length} video(s) uploaded` });
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description: 'Failed to upload videos',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+      if (videoInputRef.current) {
+        videoInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveVideo = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      videoUrls: prev.videoUrls.filter((_, i) => i !== index),
+    }));
+  };
+
   const parseSpecifications = (text: string): Record<string, string> => {
     const specs: Record<string, string> = {};
     text.split('\n').forEach((line) => {
@@ -284,6 +349,7 @@ export default function AdminProducts() {
       isFeatured: formData.isFeatured,
       isActive: formData.isActive,
       imageUrls: formData.imageUrls,
+      videoUrls: formData.videoUrls,
     };
 
     try {
@@ -666,6 +732,117 @@ export default function AdminProducts() {
                 <p className="text-xs text-muted-foreground">
                   First image will be used as the main product image. You can
                   reorder by removing and re-uploading.
+                </p>
+              )}
+            </div>
+
+            {/* Video Upload */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Product Videos</Label>
+                {formData.videoUrls.length > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {formData.videoUrls.length} video
+                    {formData.videoUrls.length !== 1 ? 's' : ''} uploaded
+                  </span>
+                )}
+              </div>
+              <div className="border-2 border-dashed border-border rounded-lg p-4">
+                {formData.videoUrls.length === 0 ? (
+                  <label
+                    htmlFor="video-upload"
+                    className="flex flex-col items-center justify-center cursor-pointer py-8 hover:bg-muted/50 rounded-lg transition-colors"
+                  >
+                    <input
+                      ref={videoInputRef}
+                      type="file"
+                      accept="video/*"
+                      multiple
+                      onChange={handleVideoUpload}
+                      className="hidden"
+                      id="video-upload"
+                    />
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="h-10 w-10 animate-spin text-muted-foreground mb-2" />
+                        <span className="text-sm text-muted-foreground">
+                          Uploading videos...
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                        <span className="text-sm font-medium text-foreground mb-1">
+                          Click to upload videos
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          You can select multiple videos at once (max 50MB each)
+                        </span>
+                      </>
+                    )}
+                  </label>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {formData.videoUrls.map((url, index) => (
+                        <div
+                          key={index}
+                          className="relative group"
+                        >
+                          <div className="aspect-video rounded-lg overflow-hidden border border-border bg-muted">
+                            <video
+                              src={url}
+                              className="w-full h-full object-cover"
+                              muted
+                              playsInline
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVideo(index)}
+                            className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                            title="Remove video"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                          <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+                            Video {index + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <label
+                      htmlFor="video-upload"
+                      className="flex items-center justify-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors py-2 border border-border rounded-lg hover:bg-muted/50"
+                    >
+                      <input
+                        ref={videoInputRef}
+                        type="file"
+                        accept="video/*"
+                        multiple
+                        onChange={handleVideoUpload}
+                        className="hidden"
+                        id="video-upload"
+                      />
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4" />
+                          <span>Add more videos</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                )}
+              </div>
+              {formData.videoUrls.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Videos will be displayed in the product detail page. First
+                  video will be shown as the main media.
                 </p>
               )}
             </div>

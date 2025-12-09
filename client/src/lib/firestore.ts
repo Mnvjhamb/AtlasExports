@@ -46,6 +46,7 @@ export interface Product {
   description: string;
   categoryId: string;
   imageUrls: string[];
+  videoUrls?: string[];
   specifications: Record<string, string>;
   minOrderQuantity: number;
   unit: string;

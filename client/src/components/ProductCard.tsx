@@ -10,6 +10,7 @@ interface ProductCardProps {
   category: string;
   description: string;
   imageUrl: string;
+  hasVideo?: boolean;
   index?: number;
   onRequestQuote?: (productId: string) => void;
 }
@@ -20,6 +21,7 @@ export default function ProductCard({
   category,
   description,
   imageUrl,
+  hasVideo = false,
   index = 0,
   onRequestQuote,
 }: ProductCardProps) {
@@ -56,13 +58,29 @@ export default function ProductCard({
             initial={{ opacity: 0, x: 20 }}
             whileHover={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.15 }}
+            className="absolute top-3 right-3 flex flex-col gap-2 items-end"
           >
             <Badge
-              className="absolute top-3 right-3 text-xs"
+              className="text-xs"
               variant="secondary"
             >
               {category}
             </Badge>
+            {hasVideo && (
+              <Badge
+                className="text-xs flex items-center gap-1"
+                variant="default"
+              >
+                <svg
+                  className="w-3 h-3"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Video
+              </Badge>
+            )}
           </motion.div>
         </motion.div>
         <CardContent className="p-4">

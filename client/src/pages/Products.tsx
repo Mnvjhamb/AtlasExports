@@ -155,6 +155,7 @@ export default function Products() {
                 category={getCategoryName(product.categoryId)}
                 description={product.description}
                 imageUrl={product.imageUrls?.[0] || equipmentImg}
+                hasVideo={!!(product.videoUrls && product.videoUrls.length > 0)}
                 onRequestQuote={handleRequestQuote}
               />
             ))}

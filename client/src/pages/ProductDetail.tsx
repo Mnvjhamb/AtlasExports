@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,89 @@ import ProductCard from '@/components/ProductCard';
 import { ChevronLeft, ChevronRight, Package, AlertCircle } from 'lucide-react';
 import { useProduct, useProducts, useCategories } from '@/hooks/useProducts';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Video Thumbnail Component
+function VideoThumbnail({ src, alt }: { src: string; alt: string }) {
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || thumbnailUrl) return;
+
+    const handleLoadedMetadata = () => {
+      // Seek to first frame (0.1 seconds to ensure we get a frame)
+      if (video.readyState >= 1) {
+        video.currentTime = 0.1;
+      }
+    };
+
+    const handleSeeked = () => {
+      // Capture frame as thumbnail
+      try {
+        const canvas = document.createElement('canvas');
+        const width = video.videoWidth || 160;
+        const height = video.videoHeight || 120;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx && width > 0 && height > 0) {
+          ctx.drawImage(video, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          setThumbnailUrl(dataUrl);
+        }
+      } catch (error) {
+        console.warn('Failed to generate video thumbnail:', error);
+        // Fallback: show video with play icon
+      }
+    };
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('seeked', handleSeeked);
+
+    // If metadata is already loaded
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
+    }
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('seeked', handleSeeked);
+    };
+  }, [src, thumbnailUrl]);
+
+  return (
+    <>
+      {thumbnailUrl ? (
+        <img
+          src={thumbnailUrl}
+          alt={alt}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          src={src}
+          className="w-full h-full object-cover"
+          muted
+          playsInline
+          preload="metadata"
+        />
+      )}
+      <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+        <div className="w-6 h-6 rounded-full bg-white/90 flex items-center justify-center">
+          <svg
+            className="w-3 h-3 text-black ml-0.5"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+      </div>
+    </>
+  );
+}
 
 // Fallback images
 import equipmentImg from '@assets/generated_images/hydraulic_disc_harrow_product.png';
@@ -78,52 +161,85 @@ export default function ProductDetail() {
     ?.filter((p) => p.id !== id)
     .slice(0, 3);
 
-  // Product images
+  // Product media (images + videos)
   const images =
-    product?.imageUrls && product.imageUrls.length > 0
-      ? product.imageUrls
-      : [equipmentImg];
+    product?.imageUrls && product.imageUrls.length > 0 ? product.imageUrls : [];
+  const videos = product?.videoUrls || [];
 
-  const imageCount = images.length;
-  const hasMultipleImages = imageCount > 1;
-  const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
+  // Combine images and videos into a single media array
+  // Format: { type: 'image' | 'video', url: string, index: number }
+  const media = [
+    ...images.map((url, idx) => ({
+      type: 'image' as const,
+      url,
+      originalIndex: idx,
+    })),
+    ...videos.map((url, idx) => ({
+      type: 'video' as const,
+      url,
+      originalIndex: idx,
+    })),
+  ];
 
-  // Preload all product images
+  // If no media, use fallback image
+  const displayMedia =
+    media.length > 0
+      ? media
+      : [{ type: 'image' as const, url: equipmentImg, originalIndex: 0 }];
+
+  const mediaCount = displayMedia.length;
+  const hasMultipleMedia = mediaCount > 1;
+  const [mediaLoaded, setMediaLoaded] = useState<Record<number, boolean>>({});
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Preload images (videos will be loaded on demand to avoid blocking)
   useEffect(() => {
-    if (!images || images.length === 0) return;
+    if (!displayMedia || displayMedia.length === 0) return;
 
-    images.forEach((imageUrl, index) => {
-      const img = new Image();
-      img.src = imageUrl;
-      img.onload = () => {
-        setImagesLoaded((prev) => ({ ...prev, [index]: true }));
-      };
-      img.onerror = () => {
-        // Mark as loaded even on error to avoid infinite loading state
-        setImagesLoaded((prev) => ({ ...prev, [index]: true }));
-      };
+    displayMedia.forEach((item, index) => {
+      if (item.type === 'image') {
+        const img = new Image();
+        img.src = item.url;
+        img.onload = () => {
+          setMediaLoaded((prev) => ({ ...prev, [index]: true }));
+        };
+        img.onerror = () => {
+          setMediaLoaded((prev) => ({ ...prev, [index]: true }));
+        };
+      }
+      // Don't preload videos - they'll load when selected to avoid blocking
     });
-  }, [images]);
+  }, [displayMedia]);
 
   // Carousel navigation
   const nextImage = useCallback(() => {
-    setSelectedImage((prev) => (prev + 1) % imageCount);
-  }, [imageCount]);
+    // Pause current video if playing
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current = null;
+    }
+    setSelectedImage((prev) => (prev + 1) % mediaCount);
+  }, [mediaCount]);
 
   const prevImage = useCallback(() => {
-    setSelectedImage((prev) => (prev - 1 + imageCount) % imageCount);
-  }, [imageCount]);
+    // Pause current video if playing
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current = null;
+    }
+    setSelectedImage((prev) => (prev - 1 + mediaCount) % mediaCount);
+  }, [mediaCount]);
 
-  // Auto-play carousel (only if multiple images)
+  // Auto-play carousel (only if multiple media)
   useEffect(() => {
-    if (!hasMultipleImages || isPaused) return;
+    if (!hasMultipleMedia || isPaused) return;
     const interval = setInterval(nextImage, 4000);
     return () => clearInterval(interval);
-  }, [hasMultipleImages, isPaused, nextImage]);
+  }, [hasMultipleMedia, isPaused, nextImage]);
 
   // Keyboard navigation
   useEffect(() => {
-    if (!hasMultipleImages) return;
+    if (!hasMultipleMedia) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -135,7 +251,17 @@ export default function ProductDetail() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [hasMultipleImages, nextImage, prevImage]);
+  }, [hasMultipleMedia, nextImage, prevImage]);
+
+  // Cleanup video when selected image changes
+  useEffect(() => {
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current = null;
+      }
+    };
+  }, [selectedImage]);
 
   if (productLoading) {
     return (
@@ -207,37 +333,91 @@ export default function ProductDetail() {
                   transition={{ duration: 0.3, ease: 'easeInOut' }}
                   className="absolute inset-0"
                 >
-                  {!imagesLoaded[selectedImage] && (
+                  {!mediaLoaded[selectedImage] && (
                     <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
                       <div className="text-muted-foreground text-sm">
-                        Loading image...
+                        Loading{' '}
+                        {displayMedia[selectedImage]?.type === 'video'
+                          ? 'video'
+                          : 'image'}
+                        ...
                       </div>
                     </div>
                   )}
-                  <img
-                    src={images[selectedImage]}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    loading={selectedImage === 0 ? 'eager' : 'lazy'}
-                    decoding={selectedImage === 0 ? 'sync' : 'async'}
-                    onLoad={() =>
-                      setImagesLoaded((prev) => ({
-                        ...prev,
-                        [selectedImage]: true,
-                      }))
-                    }
-                    style={{
-                      opacity: imagesLoaded[selectedImage] ? 1 : 0,
-                      transition: 'opacity 0.3s',
-                    }}
-                    // @ts-ignore - fetchPriority is a valid HTML attribute
-                    fetchPriority={selectedImage === 0 ? 'high' : 'auto'}
-                  />
+                  {displayMedia[selectedImage]?.type === 'video' ? (
+                    <video
+                      ref={(el) => {
+                        videoRef.current = el;
+                        if (el && mediaLoaded[selectedImage]) {
+                          // Only try to play when loaded
+                          el.play().catch((err) => {
+                            console.warn('Video autoplay failed:', err);
+                          });
+                        }
+                      }}
+                      key={`video-${selectedImage}-${displayMedia[selectedImage].url}`}
+                      src={displayMedia[selectedImage].url}
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="w-full h-full object-cover"
+                      onLoadedMetadata={() => {
+                        setMediaLoaded((prev) => ({
+                          ...prev,
+                          [selectedImage]: true,
+                        }));
+                      }}
+                      onCanPlay={() => {
+                        setMediaLoaded((prev) => ({
+                          ...prev,
+                          [selectedImage]: true,
+                        }));
+                        // Try to play when ready
+                        if (videoRef.current) {
+                          videoRef.current.play().catch((err) => {
+                            console.warn('Video autoplay failed:', err);
+                          });
+                        }
+                      }}
+                      onError={(e) => {
+                        console.error('Video load error:', e);
+                        setMediaLoaded((prev) => ({
+                          ...prev,
+                          [selectedImage]: true,
+                        }));
+                      }}
+                      style={{
+                        opacity: mediaLoaded[selectedImage] ? 1 : 0,
+                        transition: 'opacity 0.3s',
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src={displayMedia[selectedImage]?.url || equipmentImg}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      loading={selectedImage === 0 ? 'eager' : 'lazy'}
+                      decoding={selectedImage === 0 ? 'sync' : 'async'}
+                      onLoad={() =>
+                        setMediaLoaded((prev) => ({
+                          ...prev,
+                          [selectedImage]: true,
+                        }))
+                      }
+                      style={{
+                        opacity: mediaLoaded[selectedImage] ? 1 : 0,
+                        transition: 'opacity 0.3s',
+                      }}
+                      // @ts-ignore - fetchPriority is a valid HTML attribute
+                      fetchPriority={selectedImage === 0 ? 'high' : 'auto'}
+                    />
+                  )}
                 </motion.div>
               </AnimatePresence>
 
-              {/* Carousel Navigation Arrows (only if multiple images) */}
-              {hasMultipleImages && (
+              {/* Carousel Navigation Arrows (only if multiple media) */}
+              {hasMultipleMedia && (
                 <>
                   <button
                     type="button"
@@ -258,9 +438,9 @@ export default function ProductDetail() {
                     <ChevronRight className="h-5 w-5" />
                   </button>
 
-                  {/* Image Indicators */}
+                  {/* Media Indicators */}
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                    {images.map((_, index) => (
+                    {displayMedia.map((item, index) => (
                       <button
                         key={index}
                         onClick={() => setSelectedImage(index)}
@@ -269,7 +449,7 @@ export default function ProductDetail() {
                             ? 'w-8 bg-primary'
                             : 'w-2 bg-background/60 hover:bg-background/80'
                         }`}
-                        aria-label={`Go to image ${index + 1}`}
+                        aria-label={`Go to ${item.type} ${index + 1}`}
                       />
                     ))}
                   </div>
@@ -278,30 +458,37 @@ export default function ProductDetail() {
             </div>
 
             {/* Thumbnail Gallery */}
-            {hasMultipleImages && (
+            {hasMultipleMedia && (
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {images.map((img, index) => (
+                {displayMedia.map((item, index) => (
                   <motion.button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all relative ${
                       index === selectedImage
                         ? 'border-primary ring-2 ring-primary ring-offset-2'
                         : 'border-border hover:border-muted-foreground'
                     }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    data-testid={`button-image-${index}`}
+                    data-testid={`button-media-${index}`}
                   >
-                    <img
-                      src={img}
-                      alt={`${product.name} thumbnail ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onLoad={() =>
-                        setImagesLoaded((prev) => ({ ...prev, [index]: true }))
-                      }
-                    />
+                    {item.type === 'video' ? (
+                      <VideoThumbnail
+                        src={item.url}
+                        alt={`${product.name} video thumbnail ${index + 1}`}
+                      />
+                    ) : (
+                      <img
+                        src={item.url}
+                        alt={`${product.name} thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        onLoad={() =>
+                          setMediaLoaded((prev) => ({ ...prev, [index]: true }))
+                        }
+                      />
+                    )}
                   </motion.button>
                 ))}
               </div>
