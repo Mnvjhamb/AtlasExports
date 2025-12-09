@@ -36,6 +36,8 @@ import {
   Home,
   Users,
   RotateCcw,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -206,10 +208,45 @@ export default function AdminContent() {
   };
 
   const handleRemoveSlide = (id: string) => {
-    setContent((prev) => ({
-      ...prev,
-      heroSlides: prev.heroSlides.filter((s) => s.id !== id),
-    }));
+    setContent((prev) => {
+      const filtered = prev.heroSlides.filter((s) => s.id !== id);
+      // Reorder remaining slides
+      const reordered = filtered.map((slide, index) => ({
+        ...slide,
+        order: index + 1,
+      }));
+      return {
+        ...prev,
+        heroSlides: reordered,
+      };
+    });
+    setHasChanges(true);
+  };
+
+  const handleMoveSlide = (id: string, direction: 'up' | 'down') => {
+    setContent((prev) => {
+      const slides = [...prev.heroSlides].sort((a, b) => a.order - b.order);
+      const currentIndex = slides.findIndex((s) => s.id === id);
+
+      if (currentIndex === -1) return prev;
+
+      const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+      if (newIndex < 0 || newIndex >= slides.length) return prev;
+
+      // Swap orders
+      const tempOrder = slides[currentIndex].order;
+      slides[currentIndex].order = slides[newIndex].order;
+      slides[newIndex].order = tempOrder;
+
+      // Sort by order again
+      const reordered = slides.sort((a, b) => a.order - b.order);
+
+      return {
+        ...prev,
+        heroSlides: reordered,
+      };
+    });
     setHasChanges(true);
   };
 
@@ -1075,187 +1112,232 @@ export default function AdminContent() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {content.heroSlides.map((slide, index) => (
-                <div
-                  key={slide.id}
-                  className="border rounded-lg p-4 space-y-4 bg-muted/30"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <GripVertical className="h-5 w-5 text-muted-foreground" />
-                      <span className="font-medium">Slide {index + 1}</span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveSlide(slide.id)}
-                      disabled={content.heroSlides.length <= 1}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label>Title</Label>
-                        <Input
-                          value={slide.title}
-                          onChange={(e) =>
-                            handleSlideChange(slide.id, 'title', e.target.value)
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Subtitle</Label>
-                        <Textarea
-                          value={slide.subtitle}
-                          onChange={(e) =>
-                            handleSlideChange(
-                              slide.id,
-                              'subtitle',
-                              e.target.value
-                            )
-                          }
-                          rows={2}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Media Type</Label>
-                      <Select
-                        value={slide.mediaType || 'image'}
-                        onValueChange={(value: 'image' | 'video') =>
-                          handleSlideChange(slide.id, 'mediaType', value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="image">Image</SelectItem>
-                          <SelectItem value="video">Video</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>
-                        {slide.mediaType === 'video'
-                          ? 'Background Video'
-                          : 'Background Image'}
-                      </Label>
-                      <div className="border-2 border-dashed rounded-lg p-4 h-[140px] flex items-center justify-center">
-                        {slide.mediaType === 'video' ? (
-                          <>
-                            <input
-                              type="file"
-                              accept="video/*"
-                              onChange={(e) =>
-                                handleSlideVideoUpload(slide.id, e)
-                              }
-                              className="hidden"
-                              id={`slide-video-${slide.id}`}
-                            />
-                            {slide.videoUrl ? (
-                              <div className="relative w-full h-full">
-                                <video
-                                  src={slide.videoUrl}
-                                  className="w-full h-full object-cover rounded"
-                                  muted
-                                  playsInline
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    handleSlideChange(slide.id, 'videoUrl', '');
-                                    handleSlideChange(
-                                      slide.id,
-                                      'mediaType',
-                                      'image'
-                                    );
-                                  }}
-                                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ) : (
-                              <label
-                                htmlFor={`slide-video-${slide.id}`}
-                                className="flex flex-col items-center cursor-pointer text-muted-foreground"
-                              >
-                                {uploadingSlide === slide.id ? (
-                                  <Loader2 className="h-8 w-8 animate-spin" />
-                                ) : (
-                                  <>
-                                    <Upload className="h-8 w-8 mb-2" />
-                                    <span className="text-sm">
-                                      Upload Video
-                                    </span>
-                                    <span className="text-xs mt-1">
-                                      (MP4, WebM, max 200MB)
-                                    </span>
-                                  </>
-                                )}
-                              </label>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) =>
-                                handleSlideImageUpload(slide.id, e)
-                              }
-                              className="hidden"
-                              id={`slide-image-${slide.id}`}
-                            />
-                            {slide.imageUrl ? (
-                              <div className="relative w-full h-full">
-                                <img
-                                  src={slide.imageUrl}
-                                  alt={slide.title}
-                                  className="w-full h-full object-cover rounded"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleSlideChange(slide.id, 'imageUrl', '')
-                                  }
-                                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ) : (
-                              <label
-                                htmlFor={`slide-image-${slide.id}`}
-                                className="flex flex-col items-center cursor-pointer text-muted-foreground"
-                              >
-                                {uploadingSlide === slide.id ? (
-                                  <Loader2 className="h-8 w-8 animate-spin" />
-                                ) : (
-                                  <>
-                                    <Upload className="h-8 w-8 mb-2" />
-                                    <span className="text-sm">
-                                      Upload Image
-                                    </span>
-                                  </>
-                                )}
-                              </label>
-                            )}
-                          </>
+              {[...content.heroSlides]
+                .sort((a, b) => a.order - b.order)
+                .map((slide, index) => (
+                  <div
+                    key={slide.id}
+                    className="border rounded-lg p-4 space-y-4 bg-muted/30"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <GripVertical className="h-5 w-5 text-muted-foreground" />
+                        <span className="font-medium">Slide {index + 1}</span>
+                        {index === 0 && (
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                            First
+                          </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {slide.mediaType === 'video'
-                          ? 'Upload a video file (MP4, WebM, max 200MB)'
-                          : 'Leave empty to use default images'}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        {/* Move Up Button */}
+                        {index > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleMoveSlide(slide.id, 'up')}
+                            title="Move up"
+                          >
+                            <ArrowUp className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {/* Move Down Button */}
+                        {index < content.heroSlides.length - 1 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleMoveSlide(slide.id, 'down')}
+                            title="Move down"
+                          >
+                            <ArrowDown className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {/* Remove Button */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveSlide(slide.id)}
+                          disabled={content.heroSlides.length <= 1}
+                          title="Remove slide"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Title</Label>
+                          <Input
+                            value={slide.title}
+                            onChange={(e) =>
+                              handleSlideChange(
+                                slide.id,
+                                'title',
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Subtitle</Label>
+                          <Textarea
+                            value={slide.subtitle}
+                            onChange={(e) =>
+                              handleSlideChange(
+                                slide.id,
+                                'subtitle',
+                                e.target.value
+                              )
+                            }
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Media Type</Label>
+                        <Select
+                          value={slide.mediaType || 'image'}
+                          onValueChange={(value: 'image' | 'video') =>
+                            handleSlideChange(slide.id, 'mediaType', value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="image">Image</SelectItem>
+                            <SelectItem value="video">Video</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>
+                          {slide.mediaType === 'video'
+                            ? 'Background Video'
+                            : 'Background Image'}
+                        </Label>
+                        <div className="border-2 border-dashed rounded-lg p-4 h-[140px] flex items-center justify-center">
+                          {slide.mediaType === 'video' ? (
+                            <>
+                              <input
+                                type="file"
+                                accept="video/*"
+                                onChange={(e) =>
+                                  handleSlideVideoUpload(slide.id, e)
+                                }
+                                className="hidden"
+                                id={`slide-video-${slide.id}`}
+                              />
+                              {slide.videoUrl ? (
+                                <div className="relative w-full h-full">
+                                  <video
+                                    src={slide.videoUrl}
+                                    className="w-full h-full object-cover rounded"
+                                    muted
+                                    playsInline
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      handleSlideChange(
+                                        slide.id,
+                                        'videoUrl',
+                                        ''
+                                      );
+                                      handleSlideChange(
+                                        slide.id,
+                                        'mediaType',
+                                        'image'
+                                      );
+                                    }}
+                                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <label
+                                  htmlFor={`slide-video-${slide.id}`}
+                                  className="flex flex-col items-center cursor-pointer text-muted-foreground"
+                                >
+                                  {uploadingSlide === slide.id ? (
+                                    <Loader2 className="h-8 w-8 animate-spin" />
+                                  ) : (
+                                    <>
+                                      <Upload className="h-8 w-8 mb-2" />
+                                      <span className="text-sm">
+                                        Upload Video
+                                      </span>
+                                      <span className="text-xs mt-1">
+                                        (MP4, WebM, max 200MB)
+                                      </span>
+                                    </>
+                                  )}
+                                </label>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) =>
+                                  handleSlideImageUpload(slide.id, e)
+                                }
+                                className="hidden"
+                                id={`slide-image-${slide.id}`}
+                              />
+                              {slide.imageUrl ? (
+                                <div className="relative w-full h-full">
+                                  <img
+                                    src={slide.imageUrl}
+                                    alt={slide.title}
+                                    className="w-full h-full object-cover rounded"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleSlideChange(
+                                        slide.id,
+                                        'imageUrl',
+                                        ''
+                                      )
+                                    }
+                                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <label
+                                  htmlFor={`slide-image-${slide.id}`}
+                                  className="flex flex-col items-center cursor-pointer text-muted-foreground"
+                                >
+                                  {uploadingSlide === slide.id ? (
+                                    <Loader2 className="h-8 w-8 animate-spin" />
+                                  ) : (
+                                    <>
+                                      <Upload className="h-8 w-8 mb-2" />
+                                      <span className="text-sm">
+                                        Upload Image
+                                      </span>
+                                    </>
+                                  )}
+                                </label>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {slide.mediaType === 'video'
+                            ? 'Upload a video file (MP4, WebM, max 200MB)'
+                            : 'Leave empty to use default images'}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </CardContent>
           </Card>
         </TabsContent>

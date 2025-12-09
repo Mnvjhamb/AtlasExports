@@ -50,6 +50,9 @@ import {
   X,
   Image as ImageIcon,
   Loader2,
+  ArrowUp,
+  ArrowDown,
+  Star,
 } from 'lucide-react';
 import {
   useProducts,
@@ -258,6 +261,42 @@ export default function AdminProducts() {
     }));
   };
 
+  const handleMoveImage = (index: number, direction: 'up' | 'down') => {
+    setFormData((prev) => {
+      const newImageUrls = [...prev.imageUrls];
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+
+      if (newIndex < 0 || newIndex >= newImageUrls.length) return prev;
+
+      // Swap images
+      [newImageUrls[index], newImageUrls[newIndex]] = [
+        newImageUrls[newIndex],
+        newImageUrls[index],
+      ];
+
+      return {
+        ...prev,
+        imageUrls: newImageUrls,
+      };
+    });
+  };
+
+  const handleSetPrimaryImage = (index: number) => {
+    setFormData((prev) => {
+      if (index === 0) return prev; // Already primary
+
+      const newImageUrls = [...prev.imageUrls];
+      const [movedImage] = newImageUrls.splice(index, 1);
+      newImageUrls.unshift(movedImage);
+
+      return {
+        ...prev,
+        imageUrls: newImageUrls,
+      };
+    });
+    toast({ title: 'Primary image updated' });
+  };
+
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -315,6 +354,42 @@ export default function AdminProducts() {
       ...prev,
       videoUrls: prev.videoUrls.filter((_, i) => i !== index),
     }));
+  };
+
+  const handleMoveVideo = (index: number, direction: 'up' | 'down') => {
+    setFormData((prev) => {
+      const newVideoUrls = [...prev.videoUrls];
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+
+      if (newIndex < 0 || newIndex >= newVideoUrls.length) return prev;
+
+      // Swap videos
+      [newVideoUrls[index], newVideoUrls[newIndex]] = [
+        newVideoUrls[newIndex],
+        newVideoUrls[index],
+      ];
+
+      return {
+        ...prev,
+        videoUrls: newVideoUrls,
+      };
+    });
+  };
+
+  const handleSetPrimaryVideo = (index: number) => {
+    setFormData((prev) => {
+      if (index === 0) return prev; // Already primary
+
+      const newVideoUrls = [...prev.videoUrls];
+      const [movedVideo] = newVideoUrls.splice(index, 1);
+      newVideoUrls.unshift(movedVideo);
+
+      return {
+        ...prev,
+        videoUrls: newVideoUrls,
+      };
+    });
+    toast({ title: 'Primary video updated' });
   };
 
   const parseSpecifications = (text: string): Record<string, string> => {
@@ -688,23 +763,77 @@ export default function AdminProducts() {
                           key={index}
                           className="relative group"
                         >
-                          <div className="aspect-square rounded-lg overflow-hidden border border-border bg-muted">
+                          <div
+                            className={`aspect-square rounded-lg overflow-hidden border-2 bg-muted ${
+                              index === 0
+                                ? 'border-primary ring-2 ring-primary ring-offset-1'
+                                : 'border-border'
+                            }`}
+                          >
                             <img
                               src={url}
                               alt={`Product image ${index + 1}`}
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(index)}
-                            className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                            title="Remove image"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
+
+                          {/* Primary Badge */}
+                          {index === 0 && (
+                            <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                              <Star className="h-3 w-3 fill-current" />
+                              Primary
+                            </div>
+                          )}
+
+                          {/* Image Number */}
                           <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
                             {index + 1}
+                          </div>
+
+                          {/* Control Buttons */}
+                          <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className="bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-lg hover:bg-destructive/90"
+                              title="Remove image"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                            {index > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => handleSetPrimaryImage(index)}
+                                className="bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg hover:bg-primary/90"
+                                title="Set as primary"
+                              >
+                                <Star className="h-3.5 w-3.5 fill-current" />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Move Buttons */}
+                          <div className="absolute bottom-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {index > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImage(index, 'up')}
+                                className="bg-background/90 text-foreground rounded-full p-1 shadow-lg hover:bg-background border border-border"
+                                title="Move up"
+                              >
+                                <ArrowUp className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                            {index < formData.imageUrls.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImage(index, 'down')}
+                                className="bg-background/90 text-foreground rounded-full p-1 shadow-lg hover:bg-background border border-border"
+                                title="Move down"
+                              >
+                                <ArrowDown className="h-3.5 w-3.5" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -730,8 +859,9 @@ export default function AdminProducts() {
               </div>
               {formData.imageUrls.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  First image will be used as the main product image. You can
-                  reorder by removing and re-uploading.
+                  First image is the primary image (shown in product listings).
+                  Use the buttons on hover to reorder or set a different image
+                  as primary.
                 </p>
               )}
             </div>
@@ -790,24 +920,79 @@ export default function AdminProducts() {
                           key={index}
                           className="relative group"
                         >
-                          <div className="aspect-video rounded-lg overflow-hidden border border-border bg-muted">
+                          <div
+                            className={`aspect-video rounded-lg overflow-hidden border-2 bg-muted ${
+                              index === 0
+                                ? 'border-primary ring-2 ring-primary ring-offset-1'
+                                : 'border-border'
+                            }`}
+                          >
                             <video
                               src={url}
                               className="w-full h-full object-cover"
                               muted
                               playsInline
+                              preload="metadata"
                             />
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveVideo(index)}
-                            className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                            title="Remove video"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
+
+                          {/* Primary Badge */}
+                          {index === 0 && (
+                            <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                              <Star className="h-3 w-3 fill-current" />
+                              Primary
+                            </div>
+                          )}
+
+                          {/* Video Number */}
                           <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
                             Video {index + 1}
+                          </div>
+
+                          {/* Control Buttons */}
+                          <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVideo(index)}
+                              className="bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-lg hover:bg-destructive/90"
+                              title="Remove video"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                            {index > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => handleSetPrimaryVideo(index)}
+                                className="bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg hover:bg-primary/90"
+                                title="Set as primary"
+                              >
+                                <Star className="h-3.5 w-3.5 fill-current" />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Move Buttons */}
+                          <div className="absolute bottom-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {index > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => handleMoveVideo(index, 'up')}
+                                className="bg-background/90 text-foreground rounded-full p-1 shadow-lg hover:bg-background border border-border"
+                                title="Move up"
+                              >
+                                <ArrowUp className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                            {index < formData.videoUrls.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleMoveVideo(index, 'down')}
+                                className="bg-background/90 text-foreground rounded-full p-1 shadow-lg hover:bg-background border border-border"
+                                title="Move down"
+                              >
+                                <ArrowDown className="h-3.5 w-3.5" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -842,8 +1027,8 @@ export default function AdminProducts() {
               </div>
               {formData.videoUrls.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Videos will be displayed in the product detail page. First
-                  video will be shown as the main media.
+                  First video is the primary video. Use the buttons on hover to
+                  reorder or set a different video as primary.
                 </p>
               )}
             </div>

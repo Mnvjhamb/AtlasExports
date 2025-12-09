@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 const indicators = [
   {
     icon: Award,
-    value: '14+',
+    value: '5+',
     label: 'Years Experience',
   },
   {
     icon: Globe,
-    value: '25+',
+    value: '10+',
     label: 'Countries Served',
   },
   {
