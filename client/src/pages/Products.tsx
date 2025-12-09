@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -37,10 +37,10 @@ function ProductSkeleton() {
 
 export default function Products() {
   const location = useLocation();
+  const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
-  const initialCategory = searchParams.get('category') || 'all';
+  const categoryParam = searchParams.get('category') || 'all';
 
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [quoteProduct, setQuoteProduct] = useState<{
     id: string;
     name: string;
@@ -50,8 +50,40 @@ export default function Products() {
   const { data: categories, isLoading: categoriesLoading } =
     useCategories(true);
 
+  // Resolve category parameter - could be slug or ID
+  const resolvedCategoryId = useMemo(() => {
+    if (!categories || categoryParam === 'all') return 'all';
+    
+    // First, try to find by ID
+    const categoryById = categories.find((c) => c.id === categoryParam);
+    if (categoryById) return categoryById.id;
+    
+    // If not found by ID, try to find by slug
+    const categoryBySlug = categories.find((c) => c.slug === categoryParam);
+    if (categoryBySlug) return categoryBySlug.id;
+    
+    // If neither found, return 'all'
+    return 'all';
+  }, [categories, categoryParam]);
+
+  // Update URL when category changes
+  const handleCategoryChange = (value: string) => {
+    const newSearchParams = new URLSearchParams(location.search);
+    if (value === 'all') {
+      newSearchParams.delete('category');
+    } else {
+      newSearchParams.set('category', value);
+    }
+    navigate({ search: newSearchParams.toString() }, { replace: true });
+  };
+
+  // Sync URL when category param changes from external navigation
+  useEffect(() => {
+    // This ensures the dropdown reflects the URL parameter
+  }, [categoryParam]);
+
   // Fetch products (filter by category if selected)
-  const categoryId = selectedCategory !== 'all' ? selectedCategory : undefined;
+  const categoryId = resolvedCategoryId !== 'all' ? resolvedCategoryId : undefined;
   const {
     data: products,
     isLoading: productsLoading,
@@ -89,8 +121,8 @@ export default function Products() {
             <div className="flex items-center gap-3">
               <Filter className="h-5 w-5 text-muted-foreground" />
               <Select
-                value={selectedCategory}
-                onValueChange={setSelectedCategory}
+                value={resolvedCategoryId}
+                onValueChange={handleCategoryChange}
                 disabled={categoriesLoading}
               >
                 <SelectTrigger
@@ -165,14 +197,14 @@ export default function Products() {
             <Package className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No products found</h3>
             <p className="text-muted-foreground mb-4">
-              {selectedCategory !== 'all'
+              {resolvedCategoryId !== 'all'
                 ? 'Try selecting a different category'
                 : 'No products have been added yet'}
             </p>
-            {selectedCategory !== 'all' && (
+            {resolvedCategoryId !== 'all' && (
               <Button
                 variant="outline"
-                onClick={() => setSelectedCategory('all')}
+                onClick={() => handleCategoryChange('all')}
                 data-testid="button-reset-filter"
               >
                 View All Products

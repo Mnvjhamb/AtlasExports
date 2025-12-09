@@ -128,7 +128,7 @@ export default function Home() {
               {categories.slice(0, 4).map((category, index) => (
                 <CategoryCard
                   key={category.id}
-                  id={category.slug || category.id}
+                  id={category.id || category.slug || ''}
                   name={category.name}
                   imageUrl={category.imageUrl || equipmentImg}
                   productCount={0}
