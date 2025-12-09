@@ -12,7 +12,13 @@ import {
 } from '@/components/ui/dialog';
 import ContactForm from '@/components/ContactForm';
 import ProductCard from '@/components/ProductCard';
-import { ChevronLeft, ChevronRight, Package, AlertCircle } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Package,
+  AlertCircle,
+  X,
+} from 'lucide-react';
 import { useProduct, useProducts, useCategories } from '@/hooks/useProducts';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -135,6 +141,8 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [modalSelectedImage, setModalSelectedImage] = useState(0);
 
   // Fetch the product
   const {
@@ -253,6 +261,24 @@ export default function ProductDetail() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [hasMultipleMedia, nextImage, prevImage]);
 
+  // Keyboard navigation for modal
+  useEffect(() => {
+    if (!showImageModal || !hasMultipleMedia) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setModalSelectedImage((prev) => (prev - 1 + mediaCount) % mediaCount);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setModalSelectedImage((prev) => (prev + 1) % mediaCount);
+      } else if (e.key === 'Escape') {
+        setShowImageModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showImageModal, hasMultipleMedia, mediaCount]);
+
   // Cleanup video when selected image changes
   useEffect(() => {
     return () => {
@@ -320,9 +346,13 @@ export default function ProductDetail() {
           {/* Image Gallery */}
           <div className="space-y-4">
             <div
-              className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border"
+              className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border cursor-pointer"
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
+              onClick={() => {
+                setModalSelectedImage(selectedImage);
+                setShowImageModal(true);
+              }}
             >
               <AnimatePresence mode="wait">
                 <motion.div
@@ -599,6 +629,119 @@ export default function ProductDetail() {
             <DialogTitle>Request Quote for {product.name}</DialogTitle>
           </DialogHeader>
           <ContactForm productName={product.name} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Gallery Modal */}
+      <Dialog
+        open={showImageModal}
+        onOpenChange={setShowImageModal}
+      >
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] p-0 gap-0 bg-black/95 border-none sm:rounded-lg [&>button]:hidden">
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-4 right-4 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white border border-white/20 transition-all hover:scale-110"
+              aria-label="Close gallery"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Main Image/Video */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={modalSelectedImage}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+                className="relative w-full h-full flex items-center justify-center p-4"
+              >
+                {displayMedia[modalSelectedImage]?.type === 'video' ? (
+                  <video
+                    src={displayMedia[modalSelectedImage].url}
+                    controls
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="max-w-full max-h-full object-contain"
+                  />
+                ) : (
+                  <img
+                    src={displayMedia[modalSelectedImage]?.url || equipmentImg}
+                    alt={`${product.name} - Image ${modalSelectedImage + 1}`}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Navigation Arrows */}
+            {hasMultipleMedia && (
+              <>
+                <button
+                  onClick={() =>
+                    setModalSelectedImage(
+                      (prev) => (prev - 1 + mediaCount) % mediaCount
+                    )
+                  }
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border border-white/20 transition-all hover:scale-110"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={() =>
+                    setModalSelectedImage((prev) => (prev + 1) % mediaCount)
+                  }
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border border-white/20 transition-all hover:scale-110"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              </>
+            )}
+
+            {/* Thumbnail Strip at Bottom */}
+            {hasMultipleMedia && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex gap-2 max-w-[90%] overflow-x-auto pb-2 px-4">
+                {displayMedia.map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setModalSelectedImage(index)}
+                    className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                      index === modalSelectedImage
+                        ? 'border-white ring-2 ring-white ring-offset-2 ring-offset-black'
+                        : 'border-white/30 hover:border-white/60 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    {item.type === 'video' ? (
+                      <VideoThumbnail
+                        src={item.url}
+                        alt={`${product.name} thumbnail ${index + 1}`}
+                      />
+                    ) : (
+                      <img
+                        src={item.url}
+                        alt={`${product.name} thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Image Counter */}
+            {hasMultipleMedia && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-black/50 text-white text-sm border border-white/20">
+                {modalSelectedImage + 1} / {mediaCount}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
