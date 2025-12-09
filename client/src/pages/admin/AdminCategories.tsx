@@ -82,11 +82,7 @@ export default function AdminCategories() {
   const { toast } = useToast();
 
   // Fetch categories
-  const {
-    data: categories,
-    isLoading,
-    error,
-  } = useCategories(false);
+  const { data: categories, isLoading, error } = useCategories(false);
 
   // Mutations
   const createCategory = useCreateCategory();
@@ -154,10 +150,10 @@ export default function AdminCategories() {
       return;
     }
 
-    if (!isValidFileSize(file, 5)) {
+    if (!isValidFileSize(file, 50)) {
       toast({
         title: 'File too large',
-        description: 'Image must be less than 5MB',
+        description: 'Image must be less than 50MB',
         variant: 'destructive',
       });
       return;
@@ -211,7 +207,9 @@ export default function AdminCategories() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: `Failed to ${editingCategory ? 'update' : 'create'} category`,
+        description: `Failed to ${
+          editingCategory ? 'update' : 'create'
+        } category`,
         variant: 'destructive',
       });
     }
@@ -228,7 +226,10 @@ export default function AdminCategories() {
             Manage your product categories
           </p>
         </div>
-        <Button onClick={handleAdd} data-testid="button-add-category">
+        <Button
+          onClick={handleAdd}
+          data-testid="button-add-category"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Category
         </Button>
@@ -242,7 +243,10 @@ export default function AdminCategories() {
           {isLoading ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full" />
+                <Skeleton
+                  key={i}
+                  className="h-16 w-full"
+                />
               ))}
             </div>
           ) : error ? (
@@ -334,7 +338,10 @@ export default function AdminCategories() {
       </Card>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <Dialog
+        open={showDialog}
+        onOpenChange={setShowDialog}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
@@ -430,7 +437,10 @@ export default function AdminCategories() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowDialog(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -446,7 +456,10 @@ export default function AdminCategories() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={() => setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Category</AlertDialogTitle>

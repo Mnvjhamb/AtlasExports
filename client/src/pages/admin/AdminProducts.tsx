@@ -213,10 +213,10 @@ export default function AdminProducts() {
         });
         continue;
       }
-      if (!isValidFileSize(file, 5)) {
+      if (!isValidFileSize(file, 50)) {
         toast({
           title: 'File too large',
-          description: `${file.name} exceeds 5MB limit`,
+          description: `${file.name} exceeds 50MB limit`,
           variant: 'destructive',
         });
         continue;
@@ -675,7 +675,7 @@ export default function AdminProducts() {
                           Click to upload images
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          You can select multiple images at once (max 5MB each)
+                          You can select multiple images at once (max 50MB each)
                         </span>
                       </>
                     )}
@@ -776,7 +776,8 @@ export default function AdminProducts() {
                           Click to upload videos
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          You can select multiple videos at once (max 50MB each)
+                          You can select multiple videos at once (max 200MB
+                          each)
                         </span>
                       </>
                     )}

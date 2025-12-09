@@ -158,10 +158,10 @@ export default function AdminContent() {
       return;
     }
 
-    if (!isValidFileSize(file, 2)) {
+    if (!isValidFileSize(file, 50)) {
       toast({
         title: 'File too large',
-        description: 'Logo must be less than 2MB',
+        description: 'Logo must be less than 50MB',
         variant: 'destructive',
       });
       return;
@@ -243,10 +243,10 @@ export default function AdminContent() {
       return;
     }
 
-    if (!isValidFileSize(file, 5)) {
+    if (!isValidFileSize(file, 50)) {
       toast({
         title: 'File too large',
-        description: 'Image must be less than 5MB',
+        description: 'Image must be less than 50MB',
         variant: 'destructive',
       });
       return;
@@ -285,10 +285,10 @@ export default function AdminContent() {
       return;
     }
 
-    if (!isValidFileSize(file, 50)) {
+    if (!isValidFileSize(file, 200)) {
       toast({
         title: 'File too large',
-        description: 'Video must be less than 50MB',
+        description: 'Video must be less than 200MB',
         variant: 'destructive',
       });
       return;
@@ -373,10 +373,10 @@ export default function AdminContent() {
       return;
     }
 
-    if (!isValidFileSize(file, 5)) {
+    if (!isValidFileSize(file, 50)) {
       toast({
         title: 'File too large',
-        description: 'Image must be less than 5MB',
+        description: 'Image must be less than 50MB',
         variant: 'destructive',
       });
       return;
@@ -600,7 +600,7 @@ export default function AdminContent() {
               <CardHeader>
                 <CardTitle>Company Logo</CardTitle>
                 <CardDescription>
-                  Upload your company logo (PNG, JPG, or WebP, max 2MB)
+                  Upload your company logo (PNG, JPG, or WebP, max 50MB)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1192,7 +1192,7 @@ export default function AdminContent() {
                                       Upload Video
                                     </span>
                                     <span className="text-xs mt-1">
-                                      (MP4, WebM, max 50MB)
+                                      (MP4, WebM, max 200MB)
                                     </span>
                                   </>
                                 )}
@@ -1249,7 +1249,7 @@ export default function AdminContent() {
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {slide.mediaType === 'video'
-                          ? 'Upload a video file (MP4, WebM, max 50MB)'
+                          ? 'Upload a video file (MP4, WebM, max 200MB)'
                           : 'Leave empty to use default images'}
                       </p>
                     </div>
